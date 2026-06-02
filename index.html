@@ -318,6 +318,13 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 })();
 </script><script type="text/javascript">
 
+
+
+
+
+
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -4183,16 +4190,11 @@ function App() {
       var placedNames=[];
       var freqCount={};
 
-      // ── Step B: PRE-POPULATE dishCommit for all timesPerWeek dishes ──
-      // This guarantees frequency adherence regardless of lockedForMenu.
-      // Cap = timesPerWeek (must appear exactly that many times if stocked).
-      // cap=0 dishes are handled by the normal pool (max once via cap(d)=1).
+      // ── Step B: dishCommit starts empty — filled on-demand when dishes are chosen ──
+      // mustInclude: cluster logic commits remaining after winner picked
+      // normal pool: committed when first chosen (if timesPerWeek>0)
+      // timesPerWeek = "appear N times IF chosen" not "force in N times"
       var dishCommit={};
-      dishesForGen.forEach(function(d){
-        if((d.timesPerWeek||0)>0 && isFullyStocked(d)){
-          dishCommit[d.name]=d.timesPerWeek; // will place exactly timesPerWeek times
-        }
-      });
 
       var lastMenuNames=new Set();
       if(menu&&menu.plan){
@@ -4215,6 +4217,7 @@ function App() {
           if(!cdCats.includes(mc)) continue;
           if(!isFullyStocked(cd)) continue;
           if(cd.weekendOnly===true&&!isWE) continue;
+          if(cd.weekendOnly==="weekday"&&isWE) continue;
           if(cd.michelinLevel===true&&!isMich) continue;
           var blocked=false;
           for(var ei=0;ei<placedNames.length;ei++){
@@ -4222,20 +4225,23 @@ function App() {
             if(cd.excludeWith&&cd.excludeWith.includes(placedNames[ei])){blocked=true;break;}
           }
           if(blocked) continue;
-          // Check this slot isn't already filled with this dish in plan (shouldn't happen but safe)
           dishCommit[cn]--;
+          if(dishCommit[cn]<=0) delete dishCommit[cn]; // clean up so it can't block must-include or normal pool
           freqCount[cn]=(freqCount[cn]||0)+1;
           placedNames.push(cn);
           return cn;
         }
 
-        // ── 2. MUST-INCLUDE: bypasses lockedForMenu, excluded from committed ──
-        var must=dishesForGen.find(function(d){
+        // ── 2. MUST-INCLUDE with mutual-exclusion cluster awareness ──
+        // Step A: collect ALL eligible must-include candidates
+        var mustCandidates=dishesForGen.filter(function(d){
           if(!d.mustInclude) return false;
-          if(dishCommit[d.name]!==undefined) return false; // handled by committed path
-          if((freqCount[d.name]||0)>=1) return false; // max once for non-committed must-include
+          if(dishCommit[d.name]!==undefined) return false;
+          if((freqCount[d.name]||0)>=1) return false;
           var cats=Array.isArray(d.mealCats)?d.mealCats:[d.mealCat||"Dinner"];
           if(!cats.includes(mc)) return false;
+          if(d.weekendOnly===true&&!isWE) return false;
+          if(d.weekendOnly==="weekday"&&isWE) return false;
           if(!isFullyStocked(d)) return false;
           var ings=(d.mustIncludeIngredients&&d.mustIncludeIngredients.length)
             ? d.mustIncludeIngredients
@@ -4247,10 +4253,59 @@ function App() {
           }
           return true;
         });
-        if(must){
-          freqCount[must.name]=(freqCount[must.name]||0)+1;
-          placedNames.push(must.name);
-          return must.name;
+        if(mustCandidates.length>0){
+          // Step B: BFS connected-components — cluster dishes that mutually exclude each other
+          var cNames=mustCandidates.map(function(d){return d.name;});
+          var clusterOf={}; var clusters=[];
+          cNames.forEach(function(n){clusterOf[n]=-1;});
+          cNames.forEach(function(n){
+            if(clusterOf[n]!==-1) return;
+            var cluster=[]; var queue=[n];
+            while(queue.length){
+              var cur=queue.shift();
+              if(clusterOf[cur]!==-1) continue;
+              cluster.push(cur);
+              clusterOf[cur]=clusters.length;
+              var curDish=dishesForGen.find(function(d){return d.name===cur;});
+              cNames.forEach(function(other){
+                if(clusterOf[other]!==-1) return;
+                var otherDish=dishesForGen.find(function(d){return d.name===other;});
+                var connected=
+                  (curDish&&curDish.excludeWith&&curDish.excludeWith.includes(other))||
+                  (otherDish&&otherDish.excludeWith&&otherDish.excludeWith.includes(cur))||
+                  (excludeMap[cur]&&excludeMap[cur].includes(other))||
+                  (excludeMap[other]&&excludeMap[other].includes(cur));
+                if(connected) queue.push(other);
+              });
+            }
+            clusters.push(cluster);
+          });
+          // Step C: from each cluster pick the dish with lowest suggestedCount
+          // Shuffle cluster first so iteration order has no bias, then pick min count
+          var must=null; var bestScore=Infinity;
+          clusters.forEach(function(cluster){
+            // Fisher-Yates shuffle to remove first-created-dish bias
+            var shuffled=cluster.slice();
+            for(var si=shuffled.length-1;si>0;si--){
+              var sj=Math.floor(Math.random()*(si+1));
+              var tmp=shuffled[si]; shuffled[si]=shuffled[sj]; shuffled[sj]=tmp;
+            }
+            var winner=null; var winScore=Infinity;
+            shuffled.forEach(function(nm){
+              var d=dishesForGen.find(function(x){return x.name===nm;});
+              var sc=d?(d.suggestedCount||0):0;
+              if(sc<winScore){winScore=sc;winner=d;}
+            });
+            if(winner&&winScore<bestScore){bestScore=winScore;must=winner;}
+          });
+          if(must){
+            freqCount[must.name]=(freqCount[must.name]||0)+1;
+            placedNames.push(must.name);
+            // Commit remaining timesPerWeek-1 slots so the winner appears the right number of times
+            var mustRemaining=(must.timesPerWeek||0)-1;
+            if(mustRemaining>0) dishCommit[must.name]=mustRemaining;
+            return must.name;
+          }
         }
 
         // ── 3. NORMAL eligible pool (timesPerWeek=0 dishes only, max 1 each) ──
@@ -4261,6 +4316,7 @@ function App() {
           if(!isFullyStocked(d)) return false;
           if(d.lockedForMenu===true) return false;
           if(d.weekendOnly===true&&!isWE) return false;
+          if(d.weekendOnly==="weekday"&&isWE) return false;
           if(d.michelinLevel===true&&!isMich) return false;
           if((freqCount[d.name]||0)>=1) return false; // max once for timesPerWeek=0
           for(var i=0;i<placedNames.length;i++){
@@ -4285,6 +4341,10 @@ function App() {
         if(chosen){
           freqCount[chosen.name]=(freqCount[chosen.name]||0)+1;
           placedNames.push(chosen.name);
+          var chosenRemain=(chosen.timesPerWeek||0)-1;
+          if(chosenRemain>0 && !dishCommit[chosen.name]){
+            dishCommit[chosen.name]=chosenRemain;
+          }
           return chosen.name;
         }
 
@@ -4299,6 +4359,8 @@ function App() {
             var cats=Array.isArray(d.mealCats)?d.mealCats:[d.mealCat||"Dinner"];
             if(!cats.includes(mc)) return false;
             if(!d.lockedForMenu) return false;
+            if(d.weekendOnly===true&&!isWE) return false;
+            if(d.weekendOnly==="weekday"&&isWE) return false;
             if(!isFullyStocked(d)) return false;
             if((freqCount[d.name]||0)>=1) return false;
             for(var i=0;i<placedNames.length;i++){
@@ -4386,9 +4448,6 @@ function App() {
 
     var newMenu={weekKey:getWeekKey(),plan:plan};
     setMenu(newMenu);
-    // Flat $0.04 per generation
-    setApiCost(function(prev){return Math.round((prev+0.04)*100000)/100000;});
-
     // After generate: update lockedForMenu — dishes in NEW menu=true, rest=false
     // (dishesForGen only exists in mixed mode; handle both modes)
     {
@@ -4491,8 +4550,9 @@ function App() {
       if(streamDone) break;
     }
     try{reader.cancel();}catch(_){}
-    // Cost tracked per-generation in generateMenu (flat rate)
-    void inputTokens; void outputTokens;
+    // Per-token cost: claude-opus-4-8 = $5/M input, $25/M output
+    var callCost=(inputTokens*5+outputTokens*25)/1000000;
+    setApiCost(function(prev){return Math.round((prev+callCost)*1000000)/1000000;});
     var parsed=repairAndParse(accumulated);
     return parsed;
   }
@@ -5827,16 +5887,16 @@ Only output the JSON. No markdown.`;
     }
   }, "RESET")), [{
     l: "Menu generations",
-    est: "~$0.040 each"
+    est: "~$0.023 each"
   }, {
     l: "Recipe fetches",
-    est: "~$0.007 each"
+    est: "~$0.015 each"
   }, {
     l: "Nutrition checks",
-    est: "~$0.004 each"
+    est: "~$0.010 each"
   }, {
     l: "Dish swaps",
-    est: "~$0.002 each"
+    est: "~$0.005 each"
   }].map((row, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
@@ -7214,22 +7274,36 @@ Only output the JSON. No markdown.`;
   /*#__PURE__*/React.createElement("div", {
     style:{background:C.bg,border:"1px solid "+C.border2,borderRadius:7,padding:"11px 12px"}
   },
-    ["weekendOnly","michelinLevel"].map(function(key) {
-      var label=key==="weekendOnly"?"Weekend Only":"Michelin Level";
-      var desc=key==="weekendOnly"?"Only suggested on Sat & Sun":"Only in Michelin slots";
-      return /*#__PURE__*/React.createElement("div", {
-        key:key,style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}
-      },
+    [/*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},label),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},desc)
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},
+            dishData.weekendOnly===true?"Weekend Only (Sat & Sun)":dishData.weekendOnly==="weekday"?"Weekday Only (Mon-Fri)":"Any Day"
+          ),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},
+            dishData.weekendOnly===true?"Only appears Sat & Sun":dishData.weekendOnly==="weekday"?"Never appears on weekends":"Appears any day of week"
+          )
         ),
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){var u={};u[key]=!(dishData[key]);setDishData(function(p){return Object.assign({},p,u);});},
-          style:{...pill(!!(dishData[key])),fontSize:9,padding:"4px 12px"}
-        },dishData[key]?"ON":"OFF")
-      );
-    })
+          onClick:function(){
+            var cur=dishData.weekendOnly;
+            var next=cur===false?true:(cur===true?"weekday":false);
+            setDishData(function(p){return Object.assign({},p,{weekendOnly:next});});
+          },
+          style:{...pill(dishData.weekendOnly!==false),fontSize:9,padding:"4px 10px"}
+        },
+          dishData.weekendOnly===true?"🌅 WE ONLY":dishData.weekendOnly==="weekday"?"📅 WD ONLY":"📆 ANY DAY"
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+        /*#__PURE__*/React.createElement("div",null,
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Michelin Level"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Michelin slots")
+        ),
+        /*#__PURE__*/React.createElement("button",{
+          onClick:function(){setDishData(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
+          style:{...pill(!!(dishData.michelinLevel)),fontSize:9,padding:"4px 12px"}
+        },dishData.michelinLevel?"ON":"OFF")
+      )]
   ),
   ), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7650,22 +7724,36 @@ Only output the JSON. No markdown.`;
   /*#__PURE__*/React.createElement("div", {
     style:{background:C.bg,border:"1px solid "+C.border2,borderRadius:7,padding:"11px 12px"}
   },
-    ["weekendOnly","michelinLevel"].map(function(key) {
-      var label=key==="weekendOnly"?"Weekend Only":"Michelin Level";
-      var desc=key==="weekendOnly"?"Only suggested on Sat & Sun":"Only in Michelin slots";
-      return /*#__PURE__*/React.createElement("div", {
-        key:key,style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}
-      },
+    [/*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},label),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},desc)
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},
+            editDishModal.weekendOnly===true?"Weekend Only (Sat & Sun)":editDishModal.weekendOnly==="weekday"?"Weekday Only (Mon-Fri)":"Any Day"
+          ),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},
+            editDishModal.weekendOnly===true?"Only appears Sat & Sun":editDishModal.weekendOnly==="weekday"?"Never appears on weekends":"Appears any day of week"
+          )
         ),
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){var u={};u[key]=!(editDishModal[key]);setEditDishModal(function(p){return Object.assign({},p,u);});},
-          style:{...pill(!!(editDishModal[key])),fontSize:9,padding:"4px 12px"}
-        },editDishModal[key]?"ON":"OFF")
-      );
-    })
+          onClick:function(){
+            var cur=editDishModal.weekendOnly;
+            var next=cur===false?true:(cur===true?"weekday":false);
+            setEditDishModal(function(p){return Object.assign({},p,{weekendOnly:next});});
+          },
+          style:{...pill(editDishModal.weekendOnly!==false),fontSize:9,padding:"4px 10px"}
+        },
+          editDishModal.weekendOnly===true?"🌅 WE ONLY":editDishModal.weekendOnly==="weekday"?"📅 WD ONLY":"📆 ANY DAY"
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+        /*#__PURE__*/React.createElement("div",null,
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Michelin Level"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Michelin slots")
+        ),
+        /*#__PURE__*/React.createElement("button",{
+          onClick:function(){setEditDishModal(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
+          style:{...pill(!!(editDishModal.michelinLevel)),fontSize:9,padding:"4px 12px"}
+        },editDishModal.michelinLevel?"ON":"OFF")
+      )]
   ),
   /*#__PURE__*/React.createElement("div", {
     style: {display:"flex",justifyContent:"space-between",alignItems:"center",
@@ -8278,6 +8366,13 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
+
+
+
+
+
 
 </script>
 </body>
