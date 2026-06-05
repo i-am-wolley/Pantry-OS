@@ -325,6 +325,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -3285,13 +3289,17 @@ function DishTile({
       background:"rgba(0,0,0,0.75)",color:"#ccc",fontSize:7,fontWeight:700,
       borderRadius:3,padding:"1px 4px",lineHeight:1.4,pointerEvents:"none",zIndex:1}
   }, count),
-  (dish.weekendOnly===true || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
+  (dish.weekendOnly===true || dish.weekendOnly==="weekday" || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
     style:{position:"absolute",bottom:3,left:3,display:"flex",gap:2,pointerEvents:"none",zIndex:1}
   },
-    dish.weekendOnly && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,background:"rgba(255,255,255,0.18)",color:C.dim,
-        borderRadius:2,padding:"1px 3px",fontWeight:700}
+    dish.weekendOnly===true && /*#__PURE__*/React.createElement("div", {
+      style:{fontSize:6,background:"rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.45)",
+        borderRadius:2,padding:"1px 3px",fontWeight:700,letterSpacing:0.3}
     }, "WE"),
+    dish.weekendOnly==="weekday" && /*#__PURE__*/React.createElement("div", {
+      style:{fontSize:6,background:"rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.45)",
+        borderRadius:2,padding:"1px 3px",fontWeight:700,letterSpacing:0.3}
+    }, "WD"),
     dish.michelinLevel && /*#__PURE__*/React.createElement("div", {
       style:{fontSize:6,background:"rgba(255,255,255,0.18)",color:C.white,
         borderRadius:2,padding:"1px 3px",fontWeight:700}
@@ -7289,9 +7297,15 @@ Only output the JSON. No markdown.`;
             var next=cur===false?true:(cur===true?"weekday":false);
             setDishData(function(p){return Object.assign({},p,{weekendOnly:next});});
           },
-          style:{...pill(dishData.weekendOnly!==false),fontSize:9,padding:"4px 10px"}
+          style:{
+            background: dishData.weekendOnly===false ? "transparent" : "rgba(255,255,255,0.10)",
+            border: "1px solid " + (dishData.weekendOnly===false ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.55)"),
+            color: dishData.weekendOnly===false ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)",
+            borderRadius: 5, fontSize: 9, padding: "4px 10px",
+            cursor: "pointer", fontFamily: C.font, fontWeight: 700
+          }
         },
-          dishData.weekendOnly===true?"🌅 WE ONLY":dishData.weekendOnly==="weekday"?"📅 WD ONLY":"📆 ANY DAY"
+          dishData.weekendOnly===true?"◑ WE ONLY":dishData.weekendOnly==="weekday"?"▣ WD ONLY":"○ ANY DAY"
         )
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
@@ -7739,9 +7753,15 @@ Only output the JSON. No markdown.`;
             var next=cur===false?true:(cur===true?"weekday":false);
             setEditDishModal(function(p){return Object.assign({},p,{weekendOnly:next});});
           },
-          style:{...pill(editDishModal.weekendOnly!==false),fontSize:9,padding:"4px 10px"}
+          style:{
+            background: editDishModal.weekendOnly===false ? "transparent" : "rgba(255,255,255,0.10)",
+            border: "1px solid " + (editDishModal.weekendOnly===false ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.55)"),
+            color: editDishModal.weekendOnly===false ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)",
+            borderRadius: 5, fontSize: 9, padding: "4px 10px",
+            cursor: "pointer", fontFamily: C.font, fontWeight: 700
+          }
         },
-          editDishModal.weekendOnly===true?"🌅 WE ONLY":editDishModal.weekendOnly==="weekday"?"📅 WD ONLY":"📆 ANY DAY"
+          editDishModal.weekendOnly===true?"◑ WE ONLY":editDishModal.weekendOnly==="weekday"?"▣ WD ONLY":"○ ANY DAY"
         )
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
@@ -7834,12 +7854,12 @@ Only output the JSON. No markdown.`;
       background: "rgba(0,0,0,0.92)",
       display: "flex",
       alignItems: "center",
-      justifyContent: "flex-start",
+      justifyContent: "center",
       flexDirection: "column",
       zIndex: 300,
       padding: 16,
-      paddingBottom: "40%",
-      overflowY: "auto"
+      paddingTop: "calc(env(safe-area-inset-top) + 16px)",
+      paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
@@ -7847,17 +7867,21 @@ Only output the JSON. No markdown.`;
       background: C.card,
       border: `1px solid ${C.border2}`,
       borderRadius: 10,
-      padding: 20,
       width: "100%",
       maxWidth: 480,
-      marginBottom: 40
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "flex-start",
-      marginBottom: 16
+      marginBottom: 16,
+      padding: "20px 20px 0",
+      flexShrink: 0
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7891,8 +7915,9 @@ Only output the JSON. No markdown.`;
     }
   }, "\u2715")), recipeFetching === recipeModal && /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: "24px 0",
-      textAlign: "center"
+      padding: "24px 20px",
+      textAlign: "center",
+      flex: 1
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7922,14 +7947,17 @@ Only output the JSON. No markdown.`;
   }, "RETRY")), recipes[recipeModal] && recipeFetching !== recipeModal && /*#__PURE__*/React.createElement(React.Fragment, null,
     /*#__PURE__*/React.createElement("div", {
       style:{
-        whiteSpace:"pre-wrap",lineHeight:1.7,fontSize:12,
-        color:"#ccc",marginBottom:20,
-        background:"#111",borderRadius:6,padding:12,
-        border:"1px solid "+C.border
+        flex:1, overflowY:"auto", padding:"8px 20px 0", marginBottom:0
       }
-    }, typeof recipes[recipeModal]==="string" ? recipes[recipeModal] : JSON.stringify(recipes[recipeModal],null,2)),
+    }, /*#__PURE__*/React.createElement("div", {
+      style:{
+        whiteSpace:"pre-wrap",lineHeight:1.8,fontSize:13,
+        color:"#d4d4d4",marginBottom:12,marginTop:8,
+        padding:"2px 0"
+      }
+    }, typeof recipes[recipeModal]==="string" ? recipes[recipeModal] : JSON.stringify(recipes[recipeModal],null,2))),
     /*#__PURE__*/React.createElement("div", {
-      style:{display:"flex",gap:8,paddingTop:4,borderTop:"1px solid "+C.border}
+      style:{display:"flex",gap:8,paddingTop:8,padding:"8px 20px 16px",borderTop:"1px solid "+C.border,flexShrink:0}
     },
       dishes.find(function(d){return d.name===recipeModal;}) ?
         /*#__PURE__*/React.createElement("div",{
@@ -8366,6 +8394,10 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
+
+
 
 
 
