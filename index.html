@@ -377,6 +377,12 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -3394,7 +3400,6 @@ function DayCard({
   onToggleLock,
   onSwap,
   swapLoading,
-  nutFlags,
   onSaveDish,
   dishes,
   onConfirmDay,
@@ -3460,26 +3465,7 @@ function DayCard({
       letterSpacing: 0.5,
       fontWeight: 700
     }
-  }, "GOURMET"), nutFlags && (nutFlags.cal||nutFlags.length>0) && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 7,
-      background: C.card,
-      border: "1px solid " + C.border2,
-      color: C.dim,
-      borderRadius: 3,
-      padding: "2px 6px",
-      letterSpacing: 0.3,
-      display: "flex",
-      alignItems: "center",
-      gap: 4
-    }
-  },
-    nutFlags.cal && /*#__PURE__*/React.createElement("span", {style:{color:C.white,fontWeight:700}}, nutFlags.cal+"cal"),
-    nutFlags.cal && nutFlags.C!==undefined && /*#__PURE__*/React.createElement("span", {style:{color:C.dim2}}, "C"+nutFlags.C),
-    nutFlags.cal && nutFlags.F!==undefined && /*#__PURE__*/React.createElement("span", {style:{color:C.dim2}}, "F"+nutFlags.F),
-    nutFlags.cal && nutFlags.P!==undefined && /*#__PURE__*/React.createElement("span", {style:{color:C.dim2}}, "P"+nutFlags.P),
-    !nutFlags.cal && Array.isArray(nutFlags) && nutFlags.length>0 && /*#__PURE__*/React.createElement("span", null, "\u26A0 ", nutFlags.join(", "))
-  ), onToggleLock && dayMenu && /*#__PURE__*/React.createElement("button", {
+  }, "GOURMET"),  onToggleLock && dayMenu && /*#__PURE__*/React.createElement("button", {
     onClick: onToggleLock,
     style: {
       background: locked ? C.white : "transparent",
@@ -3592,7 +3578,7 @@ function DayCard({
       whiteSpace: "nowrap",
       fontWeight: 600
     }
-  }, recipes && recipes[dayMenu[mc]] ? "RECIPE" : "GET RECIPE"))) : null)) : /*#__PURE__*/React.createElement("div", {
+  }, recipes && recipes[dayMenu[mc]] ? "View Recipe" : "GET RECIPE"))) : null)) : /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim2,
       fontSize: 10
@@ -4636,7 +4622,6 @@ function App() {
       setMenu(newMenu);
       setNextMenu(null); // clear any leftover next-week plan
     }
-    setNutrition({}); // flush old nutrition when menu regenerates
     setConfirmedDays({}); // flush confirmed state when menu regenerates
     // After generate: update lockedForMenu — dishes in NEW menu=true, rest=false
     // (dishesForGen only exists in mixed mode; handle both modes)
@@ -5609,12 +5594,6 @@ Only output the JSON. No markdown.`;
       return "Every Sunday at 11:59 PM, auto-downloads a backup JSON to your browser's default Downloads folder.";
     })()
   }, {
-    key: "autoNutrition",
-    val: autoNutrition,
-    set: setAutoNutrition,
-    label: "Auto Nutrition Check",
-    desc: "After generating a menu, automatically checks each day for missing nutrients."
-  }, {
     key: "haptics",
     val: haptics,
     set: setHaptics,
@@ -5624,7 +5603,7 @@ Only output the JSON. No markdown.`;
     key: "showCookNow",
     val: showCookNow,
     set: setShowCookNow,
-    label: "What Can I Cook? Button",
+    label: "Show What Can I Cook?",
     desc: "Shows the \"◎ What Can I Cook?\" button on the Summary page — suggests dishes you can make entirely from currently stocked ingredients."
   }].map(item => /*#__PURE__*/React.createElement("div", {
     key: item.key,
@@ -6124,7 +6103,7 @@ Only output the JSON. No markdown.`;
         fontSize: 9,
         marginTop: 4
       }
-    }, "FIX ORPHANED STOCK"));
+    }, "Clean Up Stock Data"));
   })()), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.bg,
@@ -6142,13 +6121,6 @@ Only output the JSON. No markdown.`;
       marginBottom: 10
     }
   }, "API USAGE COST"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.dim,
-      marginBottom: 10,
-      lineHeight: 1.6
-    }
-  }, "Estimated lifetime cost of AI calls from this device. Based on Sonnet pricing ($3/M input, $15/M output tokens). Approximate only."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -6168,7 +6140,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       marginTop: 2
     }
-  }, "USD lifetime estimate")), /*#__PURE__*/React.createElement("button", {
+  }, "Haiku 4.5  ·  $0.80/M in  ·  $4.00/M out")), /*#__PURE__*/React.createElement("button", {
     onClick: () => setApiCost(0),
     style: {
       background: "transparent",
@@ -6182,17 +6154,17 @@ Only output the JSON. No markdown.`;
       letterSpacing: 0.5
     }
   }, "RESET")), [{
-    l: "Menu generations",
-    est: "~$0.023 each"
+    l: "Menu generation (Full AI)",
+    est: "~$0.006 each"
   }, {
-    l: "Recipe fetches",
-    est: "~$0.015 each"
+    l: "Menu generation (Mixed)",
+    est: "~$0.003 each"
   }, {
-    l: "Nutrition checks",
-    est: "~$0.010 each"
+    l: "Recipe fetch",
+    est: "~$0.003 each"
   }, {
-    l: "Dish swaps",
-    est: "~$0.005 each"
+    l: "AI Swap / Surprise Me",
+    est: "~$0.001 each"
   }].map((row, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
@@ -6207,7 +6179,7 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", {
       style:{fontSize:9,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:4}
-    }, "DEFAULT AI SLOTS (MIXED MODE)"),
+    }, "Default AI Slots"),
     /*#__PURE__*/React.createElement("div", {
       style:{fontSize:9,color:C.dim2,marginBottom:12}
     }, "Default AI cells when opening Mixed mode. Tap any cell to toggle."),
@@ -6265,7 +6237,7 @@ Only output the JSON. No markdown.`;
           showToast("All dish counts reset","success");
         },
         style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,borderRadius:5,padding:"6px 12px",cursor:"pointer",fontFamily:C.font,fontSize:9,letterSpacing:0.5}
-      }, "RESET ALL DISH COUNTS")
+      }, "Reset Cook Counters")
     )
   ),
   /*#__PURE__*/React.createElement("div", {
@@ -6318,7 +6290,6 @@ Only output the JSON. No markdown.`;
     onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
     swapLoading: swapLoading,
     isConfirmed: !!(confirmedDays&&confirmedDays[today.name]),
-    nutFlags: nutrition[today.name] || null,
     dishes: dishes,
     onSaveDish: {
       saved: name => dishes.some(d => d.name === name),
@@ -6373,7 +6344,6 @@ Only output the JSON. No markdown.`;
     onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
     swapLoading: swapLoading,
     isConfirmed: !!(confirmedDays&&confirmedDays[tomorrow.name]),
-    nutFlags: nutrition[tomorrow.name] || null,
     dishes: dishes,
     onSaveDish: {
       saved: name => dishes.some(d => d.name === name),
@@ -6955,17 +6925,22 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("button", {
       onClick: () => setGenMode("allai"),
       style: {...pill(genMode==="allai"),fontSize:9,padding:"5px 10px"}
-    }, "ALL AI"),
+    }, "Full AI"),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => setGenMode("mixed"),
       style: {...pill(genMode==="mixed"),fontSize:9,padding:"5px 10px"}
-    }, "MIXED")
+    }, "Mixed")
   ),
   /*#__PURE__*/React.createElement("button", {
     onClick: function(){ setIgnoreStock(function(v){return !v;}); },
-    style:{...pill(ignoreStock),fontSize:9,padding:"5px 10px",
-      opacity: ignoreStock ? 1 : 0.6}
-  }, ignoreStock ? "⊘ IGNORE STOCK ON" : "⊘ IGNORE STOCK"),
+    style:{fontSize:9,padding:"5px 10px",cursor:"pointer",borderRadius:6,
+      fontFamily:C.font,fontWeight:700,letterSpacing:0.3,
+      border:"1px solid "+(ignoreStock?C.white:C.dim2),
+      background:ignoreStock?C.white:"transparent",
+      color:ignoreStock?(C.bg===("#ebebeb")||C.bg===("#f0f0f0")?"#ffffff":"#111111"):C.dim2,
+      textDecoration:ignoreStock?"none":"line-through",
+      WebkitAppearance:"none"}
+  }, "Any Pantry"),
   /*#__PURE__*/React.createElement("button", {
     onClick: function() {
       haptic("medium");
@@ -6993,12 +6968,7 @@ Only output the JSON. No markdown.`;
     },
     disabled: aiLoading,
     style: {...pill(true),flex:1,padding:"10px 0",fontSize:11,opacity:aiLoading?0.5:1}
-  }, aiLoading ? "⏳ GENERATING…" : "✦ GENERATE"),
-  (menu||nextMenu) && (menu||nextMenu).plan && /*#__PURE__*/React.createElement("button", {
-    onClick: function(){ checkNutrition(); },
-    disabled: nutLoading,
-    style: {...pill(false),padding:"10px 12px",fontSize:11,opacity:nutLoading?0.5:1,flexShrink:0}
-  }, nutLoading ? "…" : "▲ NUTRITION")), aiError && /*#__PURE__*/React.createElement("div", {
+  }, aiLoading ? "⏳ GENERATING…" : "✦ GENERATE"),), aiError && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
       fontSize: 10,
@@ -7053,7 +7023,6 @@ Only output the JSON. No markdown.`;
     onToggleLock: () => toggleLockDay(day),
     onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
     swapLoading: swapLoading,
-    nutFlags: nutrition[day] || null,
     dishes: dishes,
     onConfirmDay: (nextMenu||menu) && (nextMenu||menu).plan ? confirmDay : null,
     isConfirmed: !!(confirmedDays && confirmedDays[day]),
@@ -8350,7 +8319,7 @@ Only output the JSON. No markdown.`;
         onClick:function(){cookNow();},
         disabled:cookNowLoading,
         style:{...pill(false),flex:1,padding:"8px 0",fontSize:10,opacity:cookNowLoading?0.5:1}
-      },"↺ REFRESH"),
+      },"↺ Try Again"),
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){setCookNowModal(false);},
         style:{...pill(true),flex:1,padding:"8px 0",fontSize:10}
@@ -8366,7 +8335,7 @@ Only output the JSON. No markdown.`;
     style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
       padding:20,width:"100%",maxWidth:380}
   },
-    /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:2}},"SWAP DISH"),
+    /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:2}},"Change This Dish"),
     /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginBottom:14}},
       swapModal.mealCat+" · "+swapModal.day+" · replacing: "+swapModal.current),
     swapError && /*#__PURE__*/React.createElement("div",{style:{color:"#f55",fontSize:9,marginBottom:8}},swapError),
@@ -8385,7 +8354,7 @@ Only output the JSON. No markdown.`;
         return /*#__PURE__*/React.createElement("div",{
           style:{background:C.bg,border:"1px solid "+C.border,borderRadius:7,padding:"10px 12px"}
         },
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,fontWeight:700,color:C.white,marginBottom:6,letterSpacing:0.5}},"📦 FROM INVENTORY"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,fontWeight:700,color:C.white,marginBottom:6,letterSpacing:0.5}},"📦 My Dishes"),
           stocked.length===0
             ? /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim2}},"No other stocked "+swapModal.mealCat+" dishes available")
             : /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:5}},
@@ -8415,13 +8384,13 @@ Only output the JSON. No markdown.`;
           setSwapModal(null); setSwapError("");
         },
         style:{...pill(false),width:"100%",padding:"10px 0",fontSize:10,textAlign:"left",paddingLeft:12}
-      },"🍽 DINE OUT — mark this slot as eating out"),
+      },"🍽 Eating Out"),
       // AI option
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){swapDish(swapModal.day,swapModal.mealCat,swapModal.current,true);},
         disabled:swapLoading,
         style:{...pill(true),width:"100%",padding:"10px 0",fontSize:10,opacity:swapLoading?0.6:1}
-      },swapLoading?"⏳ FINDING…":"✦ AI SWAP — find something creative")
+      },swapLoading?"⏳ FINDING…":"✦ Surprise Me")
     ),
     /*#__PURE__*/React.createElement("button",{
       onClick:function(){setSwapModal(null);setSwapError("");},
@@ -8909,7 +8878,7 @@ Only output the JSON. No markdown.`;
     onClick: e => e.stopPropagation(),
     style: {background:C.card,borderRadius:12,padding:16,width:"100%",maxWidth:480,maxHeight:"80vh",overflowY:"auto"}
   },
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:2}}, "AI SLOT MATRIX"),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:2}}, "Set AI Slots"),
     /*#__PURE__*/React.createElement("div", {style:{fontSize:9,color:C.dim,marginBottom:12}}, "Toggle cells = AI-invented. Blank = from your dish inventory."),
     (function() {
       var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -8976,6 +8945,12 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
+
+
+
+
 
 
 
