@@ -329,6 +329,20 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -2578,6 +2592,8 @@ const SK = {
   stock: "pantryos-stock",
   dishes: "pantryos-dishes",
   menu: "pantryos-menu",
+  nextMenu: "pantryos-nextmenu",
+  aiDishIng: "pantryos-aidishing",
   mealCats: "pantryos-mealcats",
   sqSize: "pantryos-sqsize",
   aiCount: "pantryos-aicount",
@@ -2803,7 +2819,9 @@ function getWeekKey() {
   const d = new Date(),
     day = d.getDay(),
     sun = new Date(d);
-  sun.setDate(d.getDate() - day);
+  // On Saturday: key represents NEXT week (advance by 1 day to get to Sunday)
+  if(day===6) sun.setDate(d.getDate() + 1);
+  else sun.setDate(d.getDate() - day);
   return `${sun.getFullYear()}-${sun.getMonth() + 1}-${sun.getDate()}`;
 }
 function getDayName(offset = 0) {
@@ -2854,7 +2872,7 @@ const LIGHT = {
 };
 // Mutable module-level theme object - updated by App before each render
 const C = Object.assign({}, DARK);
-// Mutable flag for Michelin weekend mode
+// Mutable flag for Gourmet weekend mode
 var isMichelinWeekend = true;
 function mkPill(C) {
   return function pill(active, col) {
@@ -3244,6 +3262,7 @@ function DishTile({
 }) {
   const cats = Array.isArray(dish.mealCats) ? dish.mealCats : [dish.mealCat || "Dinner"];
   const count = dish.suggestedCount || 0;
+  const isLight = C.bg === "#f0f0f0";
   return /*#__PURE__*/React.createElement("div", {
     style: {position:"relative",width:size,height:size,flexShrink:0}
   },
@@ -3251,9 +3270,9 @@ function DishTile({
     onClick: onEdit ? function(e){ e.stopPropagation(); onEdit(); } : undefined,
     style: {
       width:"100%", height:"100%",
-      background: missingIngredients ? "rgba(255,255,255,0.03)" : C.card,
+      background: missingIngredients ? (isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.03)") : C.card,
       border: missingIngredients
-        ? "1px dashed rgba(255,255,255,0.18)"
+        ? "1px dashed " + (isLight ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.28)")
         : "1px solid "+C.border,
       borderRadius:8,
       display:"flex", flexDirection:"column",
@@ -3262,7 +3281,7 @@ function DishTile({
       overflow:"hidden", position:"relative",
       padding:0, fontFamily:C.font,
       WebkitAppearance:"none", appearance:"none",
-      opacity: missingIngredients ? 0.55 : 1
+      opacity: missingIngredients ? 0.6 : 1
     }
   },
     /*#__PURE__*/React.createElement("div", {
@@ -3278,7 +3297,8 @@ function DishTile({
   ),
   onRemove && /*#__PURE__*/React.createElement("button", {
     onClick: function(e){e.stopPropagation();onRemove();},
-    style:{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.6)",
+    style:{position:"absolute",top:3,right:3,
+      background:"transparent",
       border:"none",color:C.dim,borderRadius:"50%",width:18,height:18,
       fontSize:10,cursor:"pointer",display:"flex",alignItems:"center",
       justifyContent:"center",lineHeight:1,padding:0,zIndex:2,
@@ -3286,31 +3306,39 @@ function DishTile({
   }, "\u2715"),
   count > 0 && /*#__PURE__*/React.createElement("div", {
     style:{position:"absolute",top:3,right:onRemove?24:4,
-      background:"rgba(0,0,0,0.75)",color:"#ccc",fontSize:7,fontWeight:700,
+      background: isLight ? "rgba(0,0,0,0.12)" : "rgba(0,0,0,0.75)",
+      color: isLight ? "#333" : "#ccc",
+      fontSize:7,fontWeight:700,
       borderRadius:3,padding:"1px 4px",lineHeight:1.4,pointerEvents:"none",zIndex:1}
   }, count),
   (dish.weekendOnly===true || dish.weekendOnly==="weekday" || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
     style:{position:"absolute",bottom:3,left:3,display:"flex",gap:2,pointerEvents:"none",zIndex:1}
   },
     dish.weekendOnly===true && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,background:"rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.45)",
+      style:{fontSize:6,
+        background: isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.12)",
+        color: isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.55)",
         borderRadius:2,padding:"1px 3px",fontWeight:700,letterSpacing:0.3}
     }, "WE"),
     dish.weekendOnly==="weekday" && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,background:"rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.45)",
+      style:{fontSize:6,
+        background: isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.12)",
+        color: isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.55)",
         borderRadius:2,padding:"1px 3px",fontWeight:700,letterSpacing:0.3}
     }, "WD"),
     dish.michelinLevel && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,background:"rgba(255,255,255,0.18)",color:C.white,
+      style:{fontSize:6,
+        background: isLight ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.18)",
+        color: C.white,
         borderRadius:2,padding:"1px 3px",fontWeight:700}
-    }, "M\u2605")
+    }, "G")
   ),
   /*#__PURE__*/React.createElement("button", {
     onClick: function(e){e.stopPropagation(); if(onToggleLock)onToggleLock();},
     style:{position:"absolute",top:3,left:3,width:9,height:9,
       borderRadius:"50%",zIndex:2,cursor:"pointer",border:"none",padding:0,
-      background: dish.lockedForMenu ? C.white : "rgba(255,255,255,0.25)",
-      outline: "1px solid rgba(255,255,255,0.45)",
+      background: dish.lockedForMenu ? C.white : (isLight ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.25)"),
+      outline: "1px solid " + (isLight ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.45)"),
       WebkitAppearance:"none"}
   }));
 }
@@ -3393,7 +3421,7 @@ function DayCard({
       letterSpacing: 0.5,
       fontWeight: 700
     }
-  }, "MICHELIN"), nutFlags && nutFlags.length > 0 && /*#__PURE__*/React.createElement("span", {
+  }, "GOURMET"), nutFlags && nutFlags.length > 0 && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 7,
       background: C.card,
@@ -3755,6 +3783,7 @@ function App() {
   const [stock, setStock] = useState({});
   const [dishes, setDishes] = useState([]);
   const [menu, setMenu] = useState(null);
+  const [nextMenu, setNextMenu] = useState(null);
   const [mealCats, setMealCats] = useState(DEFAULT_MEAL_CATS);
   const [sqSize, setSqSize] = useState(88);
   const [aiCount, setAiCount] = useState(3);
@@ -3782,6 +3811,8 @@ function App() {
   const [mustIncSearch, setMustIncSearch] = useState("");
   const [excludeSearch, setExcludeSearch] = useState("");
   const [genMode, setGenMode] = useState("mixed");
+  const [ignoreStock, setIgnoreStock] = useState(false);
+  const [aiDishIngredients, setAiDishIngredients] = useState({}); // {dishName: [ing,...]}
   const [defaultAiSlots, setDefaultAiSlots] = useState({Breakfast: false, Lunch: true, Snacks: false, Dinner: true});
   const [aiSlotSel, setAiSlotSel] = useState({});
   const [aiSlotPopup, setAiSlotPopup] = useState(false);
@@ -3848,6 +3879,22 @@ function App() {
       if (sd) setDishes(JSON.parse(sd));
       const sm = localStorage.getItem(SK.menu);
       if (sm) setMenu(JSON.parse(sm));
+      const sadi = localStorage.getItem(SK.aiDishIng);
+      if (sadi) setAiDishIngredients(JSON.parse(sadi));
+      const snm = localStorage.getItem(SK.nextMenu);
+      if (snm) {
+        var parsedNm = JSON.parse(snm);
+        var todayIsNotSaturday = new Date().getDay() !== 6;
+        if (parsedNm && todayIsNotSaturday) {
+          // Week has turned over — promote nextMenu to current menu
+          setMenu(parsedNm);
+          setNextMenu(null);
+          localStorage.setItem(SK.menu, snm);
+          localStorage.removeItem(SK.nextMenu);
+        } else {
+          setNextMenu(parsedNm);
+        }
+      }
       const sc = localStorage.getItem(SK.mealCats);
       if (sc) setMealCats(JSON.parse(sc));
       const sq = localStorage.getItem(SK.sqSize);
@@ -3903,6 +3950,16 @@ function App() {
   useEffect(() => {
     if (loaded && menu) localStorage.setItem(SK.menu, JSON.stringify(menu));
   }, [menu, loaded]);
+  useEffect(() => {
+    if (loaded) {
+      if (nextMenu) localStorage.setItem(SK.nextMenu, JSON.stringify(nextMenu));
+      else localStorage.removeItem(SK.nextMenu);
+    }
+  }, [nextMenu, loaded]);
+  useEffect(() => {
+    if (loaded && Object.keys(aiDishIngredients).length > 0)
+      localStorage.setItem(SK.aiDishIng, JSON.stringify(aiDishIngredients));
+  }, [aiDishIngredients, loaded]);
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.mealCats, JSON.stringify(mealCats));
   }, [mealCats, loaded]);
@@ -4111,12 +4168,14 @@ function App() {
     const DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     const WEEKEND=["Saturday","Sunday"];
     const todayIdx=new Date().getDay();
-    const remainingDays=DAY_NAMES.slice(todayIdx);
+    const isSaturday=todayIdx===6;
+    const remainingDays=isSaturday ? DAY_NAMES.slice(0) : DAY_NAMES.slice(todayIdx);
     const todayName=DAY_NAMES[todayIdx];
     const STAPLE_PASS=new Set(["oil","cooking oil","salt","water","sugar","black pepper"]);
 
     const stockedNameSet=new Set(stockedItems.map(function(i){return i.name.toLowerCase();}));
     function isFullyStocked(dish){
+      if(ignoreStock) return true; // ignore stock mode: all dishes eligible
       if(!dish.ingredients||dish.ingredients.length===0) return true;
       return dish.ingredients.every(function(ing){return stockedNameSet.has(ing.toLowerCase())||STAPLE_PASS.has(ing.toLowerCase());});
     }
@@ -4166,7 +4225,7 @@ function App() {
       var sysAll=
         "You are a creative chef. Output ONLY valid JSON, no markdown, no preamble.\n"+
         "PLACEHOLDERS: AI_DISH=creative dish from pantry, SNACK=simple creative snack max 20min from pantry,\n"+
-        "MICHELIN_LUNCH/MICHELIN_DINNER=Michelin-star quality dish from pantry.\n"+
+        "MICHELIN_LUNCH/MICHELIN_DINNER=Gourmet quality dish from pantry.\n"+
         "Use ONLY pantry ingredients listed. Staples: oil,salt,water,sugar,black pepper always available.\n"+
         "Every day needs fruit and vegetable. Respect meal slot appropriateness.\n"+
         (cookTime>0?"Max cook time "+cookTime+"min for weekday meals.\n":"")+
@@ -4241,6 +4300,8 @@ function App() {
         }
 
         // ── 2. MUST-INCLUDE with mutual-exclusion cluster awareness ──
+        // Skipped entirely in ignore-stock mode (don't force any dish in)
+        if(!ignoreStock){
         // Step A: collect ALL eligible must-include candidates
         var mustCandidates=dishesForGen.filter(function(d){
           if(!d.mustInclude) return false;
@@ -4315,6 +4376,8 @@ function App() {
             return must.name;
           }
         }
+
+        } // end if(!ignoreStock) for must-include
 
         // ── 3. NORMAL eligible pool (timesPerWeek=0 dishes only, max 1 each) ──
         var eligible=dishesForGen.filter(function(d){
@@ -4426,7 +4489,7 @@ function App() {
         var sysMix=
           "You are a creative chef. Output ONLY valid JSON, no markdown, no preamble.\n"+
           "Fill each key (DAY___MEALCATEGORY format) with a creative dish name.\n"+
-          "AI_DISH=creative dish, SNACK=simple max 20min snack, MICHELIN_*=Michelin-star quality.\n"+
+          "AI_DISH=creative dish, SNACK=simple max 20min snack, MICHELIN_*=Gourmet quality.\n"+
           (hasFallback?"PANTRY_FALLBACK slots: use ONLY the exact ingredients listed. Zero creativity outside pantry.\n":"")+
           "Use ONLY pantry ingredients listed below. Staples (oil,salt,water,sugar,pepper) always available.\n"+
           "Do NOT use or closely resemble: "+allDishNames.join(", ")+"\n"+
@@ -4454,8 +4517,47 @@ function App() {
       }
     }
 
-    var newMenu={weekKey:getWeekKey(),plan:plan};
-    setMenu(newMenu);
+    // ── Fetch ingredients for AI-generated dishes (batch call) ──
+    if(apiKey){
+      var dishNameSet3=new Set(dishes.map(function(d){return d.name;}));
+      var aiDishNames=[];
+      Object.values(plan).forEach(function(dayPlan){
+        if(!dayPlan||typeof dayPlan!=="object") return;
+        Object.values(dayPlan).forEach(function(name){
+          if(name && !dishNameSet3.has(name) && !aiDishIngredients[name]){
+            aiDishNames.push(name);
+          }
+        });
+      });
+      // Deduplicate
+      aiDishNames=[...new Set(aiDishNames)];
+      if(aiDishNames.length>0){
+        try{
+          var pantryNames=items.map(function(it){return it.name;});
+          var ingPrompt=
+            "Given this pantry items list:\n"+pantryNames.join(", ")+"\n\n"+
+            "For each dish below, return ONLY the pantry ingredients needed (exact pantry names). Omit staples (salt,oil,water,sugar,pepper,ghee,butter).\n"+
+            "Return ONLY valid JSON, no markdown: {\"dish name\": [\"PantryItemName1\",\"PantryItemName2\",...]}\n"+
+            "Dishes: "+aiDishNames.join(", ");
+          var ingResult=await runStreamRaw(
+            "You are a culinary assistant. Output ONLY valid JSON, no markdown, no preamble. Use exact pantry item names.",
+            ingPrompt
+          );
+          if(ingResult && typeof ingResult==="object"){
+            setAiDishIngredients(function(prev){return Object.assign({},prev,ingResult);});
+          }
+        }catch(e){ /* silent fail — shopping list just won't show AI ingredients */ }
+      }
+    }
+
+    var newMenu={weekKey:getWeekKey(),plan:plan,generatedOnSaturday:isSaturday||false};
+    if(isSaturday){
+      // Saturday: store as NEXT week's menu — don't overwrite current week
+      setNextMenu(newMenu);
+    } else {
+      setMenu(newMenu);
+      setNextMenu(null); // clear any leftover next-week plan
+    }
     // After generate: update lockedForMenu — dishes in NEW menu=true, rest=false
     // (dishesForGen only exists in mixed mode; handle both modes)
     {
@@ -4644,12 +4746,12 @@ function App() {
     const isWeekend = WEEKEND.includes(day);
     const weekContext = Object.entries(menu.plan || {}).map(([d, meals]) => Object.entries(meals).map(([mc, dish]) => `${d} ${mc}: ${dish}`).join(", ")).join(" | ");
     const cookTimeStr = cookTime > 0 ? " Must be cookable within " + cookTime + " minutes." : "";
-    const prompt = `You are a Michelin chef and meal planner. Suggest ONE single replacement dish.
+    const prompt = `You are a Gourmet chef and meal planner. Suggest ONE single replacement dish.
 Current dish to replace: "${current}" (${mealCat} on ${day})
 My pantry: ${stockDesc || "various"}
 My saved dishes: ${myDishes}
 Rest of week already planned: ${weekContext}
-${isWeekend ? "IMPORTANT: This is a weekend — suggest something Michelin-star worthy and creative." : "Prefer my saved dishes if suitable."}${cookTimeStr}
+${isWeekend ? "IMPORTANT: This is a weekend — suggest something Gourmet-worthy and creative." : "Prefer my saved dishes if suitable."}${cookTimeStr}
 Reply with ONLY the dish name. Nothing else. No punctuation. Just the name.`;
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -5728,6 +5830,8 @@ Only output the JSON. No markdown.`;
         localStorage.removeItem(SK.stock);
         localStorage.removeItem(SK.dishes);
         localStorage.removeItem(SK.menu);
+        localStorage.removeItem(SK.nextMenu);
+        localStorage.removeItem(SK.aiDishIng);
         localStorage.removeItem(SK.recipes);
         localStorage.removeItem(SK.lockedDays);
         localStorage.setItem(VERSION_KEY, String(CURRENT_VERSION));
@@ -6005,52 +6109,7 @@ Only output the JSON. No markdown.`;
     style: {
       padding: "12px 10px 80px"
     }
-  }, menu?.plan?.[tomorrow.name] && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: "#aaa",
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 6
-    }
-  }, "\u25B6 TOMORROW \u2014 ", tomorrow.name.toUpperCase(), " ", tomorrow.date), /*#__PURE__*/React.createElement(DayCard, {
-    day: tomorrow.name,
-    dayMenu: menu&&menu.plan?menu.plan[tomorrow.name]:{},
-    mealCats: mealCats,
-    isTomorrow: true,
-    isWeekend: WEEKEND.includes(tomorrow.name),
-    onRecipe: dishName => fetchRecipe(dishName),
-    recipes: recipes,
-    locked: !!lockedDays[tomorrow.name],
-    onSwap: (d, mc, cur) => swapDish(d, mc, cur),
-    swapLoading: swapLoading,
-    isConfirmed: !!(confirmedDays&&confirmedDays[tomorrow.name]),
-    nutFlags: nutrition[tomorrow.name] || [],
-    dishes: dishes,
-    onSaveDish: {
-      saved: name => dishes.some(d => d.name === name),
-      save: (name, mc) => {
-        haptic("light");
-        setDishes(p => [...p, {
-          id: Date.now(),
-          name,
-          mealCats: [mc],
-          ingredients: [],
-          mustInclude: false,
-          mustIncludeIngredient: "",
-          timesPerWeek: 0,
-          pairWith: [],
-          makesLeftovers: false,
-          leftoverMeal: "",
-          leftoverSlot: ""
-        }]);
-      }
-    }
-  })), menu?.plan?.[today.name] && /*#__PURE__*/React.createElement("div", {
+  }, menu?.plan?.[today.name] && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
@@ -6105,7 +6164,220 @@ Only output the JSON. No markdown.`;
       borderRadius: 8,
       border: `1px solid ${C.border}`
     }
-  }, "No menu yet. Go to Weekly Menu tab to generate."), /*#__PURE__*/React.createElement("div", {
+  }, "No menu yet. Go to Weekly Menu tab to generate."), (nextMenu ? nextMenu?.plan?.[tomorrow.name] : menu?.plan?.[tomorrow.name]) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: "#aaa",
+      letterSpacing: 2,
+      fontWeight: 700,
+      marginBottom: 6
+    }
+  }, "\u25B6 TOMORROW \u2014 ", tomorrow.name.toUpperCase(), " ", tomorrow.date), /*#__PURE__*/React.createElement(DayCard, {
+    day: tomorrow.name,
+    dayMenu: nextMenu ? (nextMenu.plan?.[tomorrow.name]||{}) : (menu&&menu.plan?menu.plan[tomorrow.name]:{}) ,
+    mealCats: mealCats,
+    isTomorrow: true,
+    isWeekend: WEEKEND.includes(tomorrow.name),
+    onRecipe: dishName => fetchRecipe(dishName),
+    recipes: recipes,
+    locked: !!lockedDays[tomorrow.name],
+    onSwap: (d, mc, cur) => swapDish(d, mc, cur),
+    swapLoading: swapLoading,
+    isConfirmed: !!(confirmedDays&&confirmedDays[tomorrow.name]),
+    nutFlags: nutrition[tomorrow.name] || [],
+    dishes: dishes,
+    onSaveDish: {
+      saved: name => dishes.some(d => d.name === name),
+      save: (name, mc) => {
+        haptic("light");
+        setDishes(p => [...p, {
+          id: Date.now(),
+          name,
+          mealCats: [mc],
+          ingredients: [],
+          mustInclude: false,
+          mustIncludeIngredient: "",
+          timesPerWeek: 0,
+          pairWith: [],
+          makesLeftovers: false,
+          leftoverMeal: "",
+          leftoverSlot: ""
+        }]);
+      }
+    }
+  })), menu && menu.plan && /*#__PURE__*/React.createElement("div", {
+    style: {marginBottom:16}
+  }, /*#__PURE__*/React.createElement("div", {
+    style:{fontSize:9,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
+      display:"flex",justifyContent:"space-between",alignItems:"center"}
+  },
+    /*#__PURE__*/React.createElement("span", null, "THIS WEEK'S SHOPPING"),
+    /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
+      /*#__PURE__*/React.createElement("span", {style:{fontSize:8,color:C.dim2,fontWeight:400}},
+        "tap to mark restocked"),
+      /*#__PURE__*/React.createElement("button",{
+        onClick:function(){
+          // Mark all missing shopping list items as stocked
+          var STAPLE2=new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
+          var activeMenu2=nextMenu||menu;
+          var menuDishNames2=new Set();
+          Object.values(activeMenu2.plan).forEach(function(dp){
+            if(!dp||typeof dp!=="object") return;
+            Object.values(dp).forEach(function(n){if(n)menuDishNames2.add(n);});
+          });
+          // Build same pantry lookup as shopping list
+          function normIng2(s){return s.toLowerCase().trim().replace(/s$/,"");}
+          var plu2={};
+          items.forEach(function(it){
+            plu2[it.name.toLowerCase().trim()]=it;
+            plu2[normIng2(it.name)]=it;
+          });
+          function findPI2(ing){
+            var k=ing.toLowerCase().trim(),kn=normIng2(ing);
+            if(plu2[k]) return plu2[k];
+            if(plu2[kn]) return plu2[kn];
+            return items.find(function(it){var n=it.name.toLowerCase().trim();return n.includes(k)||k.includes(n);})||null;
+          }
+          var toStock=[];
+          menuDishNames2.forEach(function(dishName){
+            var dish=dishes.find(function(d){return d.name===dishName;});
+            var ings=dish?(dish.ingredients||[]):(aiDishIngredients[dishName]||[]);
+            ings.forEach(function(ing){
+              var k=ing.toLowerCase().trim();
+              if(STAPLE2.has(k)) return;
+              var pi=findPI2(ing);
+              if(!pi) return;
+              var inStockNow=!!stock[pi.id]||!!stock[String(pi.id)];
+              if(!inStockNow) toStock.push(pi.id);
+            });
+          });
+          if(toStock.length>0){
+            setStock(function(prev){
+              var n=Object.assign({},prev);
+              toStock.forEach(function(id){n[id]=true;});
+              return n;
+            });
+          }
+        },
+        style:{fontSize:8,color:C.dim,background:"transparent",border:"1px solid "+C.border2,
+          borderRadius:3,padding:"2px 6px",cursor:"pointer",fontFamily:C.font,fontWeight:700}
+      },"✓ ALL")
+    )
+  ),
+  (() => {
+    var activeMenuForShopping = nextMenu || menu;
+    var menuDishNames = new Set();
+    Object.values(activeMenuForShopping.plan).forEach(function(dayPlan){
+      if(!dayPlan||typeof dayPlan!=="object") return;
+      Object.values(dayPlan).forEach(function(n){if(n)menuDishNames.add(n);});
+    });
+    var STAPLE = new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
+    // For AI dishes: fuzzy fallback in case Claude drifts from exact pantry names
+    var pantryByName={};
+    items.forEach(function(it){ pantryByName[it.name.toLowerCase().trim()]=it; });
+    function findPantryItemAI(ing){
+      var k=ing.toLowerCase().trim();
+      // 1. Exact
+      if(pantryByName[k]) return pantryByName[k];
+      // 2. Plural/singular tolerance
+      var kn=k.replace(/s$/,"");
+      var found=pantryByName[kn];
+      if(found) return found;
+      // 3. Contains fallback
+      return items.find(function(it){
+        var n=it.name.toLowerCase().trim();
+        return n.includes(k)||k.includes(n);
+      })||null;
+    }
+    var missingMap = {};
+    menuDishNames.forEach(function(dishName){
+      var dish = dishes.find(function(d){return d.name===dishName;});
+      var isAI = !dish;
+      var ings = dish ? (dish.ingredients||[]) : (aiDishIngredients[dishName]||[]);
+      ings.forEach(function(ing){
+        var k = ing.toLowerCase().trim();
+        if(STAPLE.has(k)) return;
+        var pantryItem;
+        if(!isAI){
+          // Inventory dish: ingredients are already pantry-anchored — exact match only
+          pantryItem = pantryByName[k];
+        } else {
+          // AI dish: Claude should return exact names but use fuzzy as safety net
+          pantryItem = findPantryItemAI(ing);
+        }
+        if(!pantryItem) return; // not in pantry — skip
+        var inStock = !!stock[pantryItem.id]||!!stock[String(pantryItem.id)];
+        if(!inStock){
+          var label = pantryItem.name;
+          if(!missingMap[label]) missingMap[label]={dishes:[],isAI:isAI,itemId:pantryItem.id};
+          missingMap[label].dishes.push(dishName);
+        }
+      });
+    });
+    var missingList = Object.keys(missingMap).sort();
+    // AI dishes with no ingredient data yet
+    var unknownAI = [...menuDishNames].filter(function(n){
+      return !dishes.find(function(d){return d.name===n;}) && !aiDishIngredients[n];
+    });
+    if(missingList.length===0 && unknownAI.length===0){
+      return /*#__PURE__*/React.createElement("div", {
+        style:{fontSize:10,color:C.dim,padding:"8px 12px",background:C.card,
+          borderRadius:6,border:"1px solid "+C.border}
+      }, "\u2713 All ingredients stocked for this week");
+    }
+    return /*#__PURE__*/React.createElement("div", null,
+      missingList.length>0 && /*#__PURE__*/React.createElement("div", {
+        style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:unknownAI.length>0?10:0}
+      }, missingList.map(function(ing){
+        var entryId = missingMap[ing] && missingMap[ing].itemId;
+        var isStockedNow = entryId ? (!!stock[entryId]||!!stock[String(entryId)]) : false;
+        var entry = missingMap[ing];
+        return /*#__PURE__*/React.createElement("div", {
+          key: ing,
+          onClick: function(){
+            var itemId = missingMap[ing] && missingMap[ing].itemId;
+            if(itemId){
+              setStock(function(prev){
+                var n=Object.assign({},prev);
+                var wasStocked=!!n[itemId]||!!n[String(itemId)];
+                n[itemId]=!wasStocked; n[String(itemId)]=!wasStocked;
+                return n;
+              });
+            }
+          },
+          title: "For: "+entry.dishes.join(", ")+(entry.isAI?" (AI dish)":""),
+          style:{
+            padding:"5px 10px",borderRadius:20,fontSize:10,fontWeight:600,
+            background: isStockedNow ? C.card : C.bg,
+            border:"1px solid "+(isStockedNow ? C.dim2 : C.border),
+            color: isStockedNow ? C.dim : C.white,
+            opacity: isStockedNow ? 0.5 : 1,
+            cursor:"pointer",
+            display:"flex",alignItems:"center",gap:5,
+            transition:"opacity 0.15s"
+          }
+        },
+          /*#__PURE__*/React.createElement("span", {
+            style:{width:6,height:6,borderRadius:"50%",flexShrink:0,
+              background: isStockedNow ? C.dim2 : C.white,
+              display:"inline-block"}
+          }),
+          ing,
+          entry.isAI && /*#__PURE__*/React.createElement("span", {
+            style:{fontSize:8,color:C.dim2,marginLeft:2}
+          }, "AI")
+        );
+      })),
+      unknownAI.length>0 && /*#__PURE__*/React.createElement("div", {
+        style:{fontSize:9,color:C.dim2,marginTop:4,fontStyle:"italic"}
+      }, "Fetching ingredients for: ", unknownAI.join(", "), "\u2026")
+    );
+  })()),
+  /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6,
@@ -6439,13 +6711,13 @@ Only output the JSON. No markdown.`;
       fontWeight: 600,
       marginBottom: 2
     }
-  }, "Michelin Weekend Mode"), /*#__PURE__*/React.createElement("div", {
+  }, "Gourmet Weekend Mode"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 9,
       color: C.dim,
       lineHeight: 1.5
     }
-  }, michelinWeekend ? "Sat & Sun → Michelin-star dishes  ·  Fruit + Veg every day" : "Weekends treated same as weekdays  ·  Fruit + Veg every day")), /*#__PURE__*/React.createElement("button", {
+  }, michelinWeekend ? "Sat & Sun → Gourmet dishes  ·  Fruit + Veg every day" : "Weekends treated same as weekdays  ·  Fruit + Veg every day")), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       haptic("light");
       setMichelinWeekend(m => !m);
@@ -6471,12 +6743,17 @@ Only output the JSON. No markdown.`;
     }, "MIXED")
   ),
   /*#__PURE__*/React.createElement("button", {
+    onClick: function(){ setIgnoreStock(function(v){return !v;}); },
+    style:{...pill(ignoreStock),fontSize:9,padding:"5px 10px",
+      opacity: ignoreStock ? 1 : 0.6}
+  }, ignoreStock ? "⊘ IGNORE STOCK ON" : "⊘ IGNORE STOCK"),
+  /*#__PURE__*/React.createElement("button", {
     onClick: function() {
       haptic("medium");
       if (genMode === "mixed") {
         var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
         var todayIdx = new Date().getDay();
-        var remaining = DAY_NAMES.slice(todayIdx);
+        var remaining = todayIdx===6 ? DAY_NAMES.slice(0) : DAY_NAMES.slice(todayIdx);
         // Pre-fill from defaultAiSlots (keyed by day|mc)
         var sel = Object.assign({}, defaultAiSlots);
         // Remove locked days
@@ -6498,7 +6775,7 @@ Only output the JSON. No markdown.`;
     disabled: aiLoading,
     style: {...pill(true),flex:1,padding:"10px 0",fontSize:11,opacity:aiLoading?0.5:1}
   }, aiLoading ? "⏳ GENERATING…" : "✦ GENERATE"),
-  menu && menu.plan && /*#__PURE__*/React.createElement("button", {
+  (menu||nextMenu) && (menu||nextMenu).plan && /*#__PURE__*/React.createElement("button", {
     onClick: function(){ checkNutrition(); },
     disabled: nutLoading,
     style: {...pill(false),padding:"10px 12px",fontSize:11,opacity:nutLoading?0.5:1,flexShrink:0}
@@ -6535,7 +6812,7 @@ Only output the JSON. No markdown.`;
       fontWeight: 700,
       marginBottom: 10
     }
-  }, "THIS WEEK \xB7 ", menu.weekKey),
+  }, (nextMenu ? "NEXT WEEK" : "THIS WEEK"), " \xB7 ", (nextMenu||menu).weekKey),
   Object.keys(lockedDays||{}).some(function(d){return lockedDays[d];}) &&
   /*#__PURE__*/React.createElement("button", {
     onClick: function(){ setLockedDays({}); setConfirmedDays({}); },
@@ -6549,16 +6826,26 @@ Only output the JSON. No markdown.`;
       flexDirection: "column",
       gap: 8
     }
-  }, Object.keys((menu&&menu.plan)||{}).sort((a, b) => {
+  }, Object.keys(((nextMenu||menu)&&(nextMenu||menu).plan)||{}).sort((a, b) => {
     const order = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return order.indexOf(a) - order.indexOf(b);
   }).filter(day => menu&&menu.plan&&menu.plan[day] && typeof menu.plan[day] === "object").map(day => /*#__PURE__*/React.createElement(DayCard, {
     key: day,
     day: day,
-    dayMenu: menu&&menu.plan?menu.plan[day]:{},
+    dayMenu: (nextMenu||menu)&&(nextMenu||menu).plan?(nextMenu||menu).plan[day]:{},
+    dayDate: (function(){
+      var ORDER=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      var idx=ORDER.indexOf(day);
+      var todayIdx2=new Date().getDay();
+      var offset=(menu&&menu.generatedOnSaturday)
+        ? (idx===6?7:idx+1)  // Saturday generated: Sat=+7, Sun=+1...Fri=+6
+        : (idx>=todayIdx2?idx-todayIdx2:7-(todayIdx2-idx));
+      var d=new Date(); d.setDate(d.getDate()+offset);
+      return d.toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+    })(),
     mealCats: mealCats,
-    isToday: day === today.name,
-    isTomorrow: day === tomorrow.name,
+    isToday: day === today.name && !nextMenu,
+    isTomorrow: day === tomorrow.name && !nextMenu,
     isWeekend: WEEKEND.includes(day),
     onRecipe: dishName => fetchRecipe(dishName),
     recipes: recipes,
@@ -7310,8 +7597,8 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Michelin Level"),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Michelin slots")
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Gourmet Level"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Gourmet slots")
         ),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){setDishData(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
@@ -7766,8 +8053,8 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Michelin Level"),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Michelin slots")
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Gourmet Level"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Gourmet slots")
         ),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){setEditDishModal(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
@@ -8332,7 +8619,7 @@ Only output the JSON. No markdown.`;
     (function() {
       var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
       var todayIdx=new Date().getDay();
-      var days=DAY_NAMES.slice(todayIdx).filter(function(d){return !(lockedDays&&lockedDays[d]);});
+      var days=(todayIdx===6?DAY_NAMES.slice(0):DAY_NAMES.slice(todayIdx)).filter(function(d){return !(lockedDays&&lockedDays[d]);});
       var abbr={"Sunday":"Sun","Monday":"Mon","Tuesday":"Tue","Wednesday":"Wed","Thursday":"Thu","Friday":"Fri","Saturday":"Sat"};
       // Header row
       var headerCells=[/*#__PURE__*/React.createElement("div",{key:"lbl",style:{width:64,flexShrink:0}})];
@@ -8394,6 +8681,20 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
