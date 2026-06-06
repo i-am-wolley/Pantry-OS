@@ -343,6 +343,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -4533,18 +4534,38 @@ function App() {
       aiDishNames=[...new Set(aiDishNames)];
       if(aiDishNames.length>0){
         try{
-          var pantryNames=items.map(function(it){return it.name;});
+          // Build id→name map so Claude returns IDs (100% match, no string drift)
+          var STAPLE_SET=new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
+          var nonStapleItems=items.filter(function(it){
+            return !STAPLE_SET.has(it.name.toLowerCase().trim());
+          });
+          var pantryIdMap={};
+          nonStapleItems.forEach(function(it){ pantryIdMap[it.id]=it.name; });
+          var pantryList=nonStapleItems.map(function(it){return it.id+":"+it.name;}).join(", ");
           var ingPrompt=
-            "Given this pantry items list:\n"+pantryNames.join(", ")+"\n\n"+
-            "For each dish below, return ONLY the pantry ingredients needed (exact pantry names). Omit staples (salt,oil,water,sugar,pepper,ghee,butter).\n"+
-            "Return ONLY valid JSON, no markdown: {\"dish name\": [\"PantryItemName1\",\"PantryItemName2\",...]}\n"+
+            "Pantry items (id:name):\n"+pantryList+"\n\n"+
+            "For each dish below, return the IDs of pantry items needed to make it.\n"+
+            "Return ONLY valid JSON, no markdown: {\"dish name\": [id1, id2, ...]}\n"+
+            "Use ONLY the numeric IDs from the list above. Omit staples.\n"+
             "Dishes: "+aiDishNames.join(", ");
           var ingResult=await runStreamRaw(
-            "You are a culinary assistant. Output ONLY valid JSON, no markdown, no preamble. Use exact pantry item names.",
+            "You are a culinary assistant. Output ONLY valid JSON with numeric IDs. No markdown, no preamble.",
             ingPrompt
           );
           if(ingResult && typeof ingResult==="object"){
-            setAiDishIngredients(function(prev){return Object.assign({},prev,ingResult);});
+            // Store as {dishName: [itemId, ...]} — IDs guaranteed to match pantry
+            var mapped={};
+            Object.keys(ingResult).forEach(function(dishName){
+              var ids=ingResult[dishName];
+              if(Array.isArray(ids)){
+                // Validate each ID exists in pantry
+                var validIds=ids.filter(function(id){
+                  return pantryIdMap[id]!==undefined || pantryIdMap[Number(id)]!==undefined;
+                }).map(function(id){return Number(id)||id;});
+                if(validIds.length>0) mapped[dishName]=validIds;
+              }
+            });
+            setAiDishIngredients(function(prev){return Object.assign({},prev,mapped);});
           }
         }catch(e){ /* silent fail — shopping list just won't show AI ingredients */ }
       }
@@ -6245,11 +6266,24 @@ Only output the JSON. No markdown.`;
           var toStock=[];
           menuDishNames2.forEach(function(dishName){
             var dish=dishes.find(function(d){return d.name===dishName;});
-            var ings=dish?(dish.ingredients||[]):(aiDishIngredients[dishName]||[]);
-            ings.forEach(function(ing){
-              var k=ing.toLowerCase().trim();
-              if(STAPLE2.has(k)) return;
-              var pi=findPI2(ing);
+            var isAIdish=!dish;
+            var rawI=dish?(dish.ingredients||[]):(aiDishIngredients[dishName]||[]);
+            rawI.forEach(function(ing){
+              var pi;
+              if(!isAIdish){
+                var k=ing.toLowerCase().trim();
+                if(STAPLE2.has(k)) return;
+                pi=plu2[k];
+              } else {
+                var ingId2=Number(ing);
+                if(!isNaN(ingId2)&&ingId2>0){
+                  pi=items.find(function(it){return it.id===ingId2||it.id===ing;});
+                } else {
+                  var k2=String(ing).toLowerCase().trim();
+                  if(STAPLE2.has(k2)) return;
+                  pi=findPI2(ing);
+                }
+              }
               if(!pi) return;
               var inStockNow=!!stock[pi.id]||!!stock[String(pi.id)];
               if(!inStockNow) toStock.push(pi.id);
@@ -6297,19 +6331,28 @@ Only output the JSON. No markdown.`;
     menuDishNames.forEach(function(dishName){
       var dish = dishes.find(function(d){return d.name===dishName;});
       var isAI = !dish;
-      var ings = dish ? (dish.ingredients||[]) : (aiDishIngredients[dishName]||[]);
-      ings.forEach(function(ing){
-        var k = ing.toLowerCase().trim();
-        if(STAPLE.has(k)) return;
+      var rawIngs = dish ? (dish.ingredients||[]) : (aiDishIngredients[dishName]||[]);
+      rawIngs.forEach(function(ing){
         var pantryItem;
         if(!isAI){
-          // Inventory dish: ingredients are already pantry-anchored — exact match only
+          // Inventory dish: exact pantry name match (ingredients are pantry-anchored)
+          var k = ing.toLowerCase().trim();
+          if(STAPLE.has(k)) return;
           pantryItem = pantryByName[k];
         } else {
-          // AI dish: Claude should return exact names but use fuzzy as safety net
-          pantryItem = findPantryItemAI(ing);
+          // AI dish: new format returns numeric IDs, old format returns name strings
+          var ingId = Number(ing);
+          if(!isNaN(ingId) && ingId>0){
+            // New format: ID
+            pantryItem = items.find(function(it){return it.id===ingId||it.id===ing;});
+          } else {
+            // Old format / fallback: name string with fuzzy
+            var k2 = String(ing).toLowerCase().trim();
+            if(STAPLE.has(k2)) return;
+            pantryItem = findPantryItemAI(ing);
+          }
         }
-        if(!pantryItem) return; // not in pantry — skip
+        if(!pantryItem) return;
         var inStock = !!stock[pantryItem.id]||!!stock[String(pantryItem.id)];
         if(!inStock){
           var label = pantryItem.name;
@@ -8681,6 +8724,7 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
 
 
 
