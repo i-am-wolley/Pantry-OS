@@ -344,6 +344,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -4738,7 +4740,9 @@ function App() {
       var poolB_s=eligible_s.filter(function(d){return lastMenuNames_s.has(d.name);}).sort(function(a,b){return (a.suggestedCount||0)-(b.suggestedCount||0)||Math.random()-0.5;});
       var picked_s=(poolA_s.length?poolA_s:poolB_s)[0];
       if(picked_s){
-        setMenu(function(prev){return Object.assign({},prev,{plan:Object.assign({},prev.plan,{[day]:Object.assign({},prev.plan[day],{[mealCat]:picked_s.name})})});});
+        (nextMenu
+          ? setNextMenu(function(prev){return Object.assign({},prev,{plan:Object.assign({},prev.plan,{[day]:Object.assign({},prev.plan[day],{[mealCat]:picked_s.name})})});})
+          : setMenu(function(prev){return Object.assign({},prev,{plan:Object.assign({},prev.plan,{[day]:Object.assign({},prev.plan[day],{[mealCat]:picked_s.name})})});}));
         setSwapModal(null);
         setSwapLoading(false);
         return;
@@ -4795,7 +4799,7 @@ Reply with ONLY the dish name. Nothing else. No punctuation. Just the name.`;
       const data = await res.json();
       const newDish = (data.content?.map(b => b.text || "").join("") || "").trim().replace(/['"]/g, "");
       if (newDish) {
-        setMenu(prev => {
+        (nextMenu ? setNextMenu : setMenu)(prev => {
           const updated = {
             ...prev,
             plan: {
@@ -4918,6 +4922,7 @@ Only output the JSON. No markdown.`;
       const msUntil = target - now;
       return setTimeout(() => {
         setMenu(null);
+        setNextMenu(null);
         setLockedDays({});
         setNutrition({});
       }, msUntil);
@@ -5076,9 +5081,10 @@ Only output the JSON. No markdown.`;
     setTimeout(function() { setToast(null); }, 3000);
   }
   function confirmDay(dayName) {
-    if (!menu || !menu.plan || !menu.plan[dayName]) return;
+    var activeMenu = nextMenu || menu;
+    if (!activeMenu || !activeMenu.plan || !activeMenu.plan[dayName]) return;
     if (confirmedDays[dayName]) return; // already confirmed
-    var dayPlan = menu.plan[dayName];
+    var dayPlan = activeMenu.plan[dayName];
     var dishNameSet = new Set(dishes.map(function(d) { return d.name; }));
     var updated = dishes.map(function(d) {
       if (Object.values(dayPlan).includes(d.name) && dishNameSet.has(d.name)) {
@@ -6872,7 +6878,7 @@ Only output the JSON. No markdown.`;
   }, Object.keys(((nextMenu||menu)&&(nextMenu||menu).plan)||{}).sort((a, b) => {
     const order = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return order.indexOf(a) - order.indexOf(b);
-  }).filter(day => menu&&menu.plan&&menu.plan[day] && typeof menu.plan[day] === "object").map(day => /*#__PURE__*/React.createElement(DayCard, {
+  }).filter(day => { var dm=(nextMenu||menu); return dm&&dm.plan&&dm.plan[day]&&typeof dm.plan[day]==="object"; }).map(day => /*#__PURE__*/React.createElement(DayCard, {
     key: day,
     day: day,
     dayMenu: (nextMenu||menu)&&(nextMenu||menu).plan?(nextMenu||menu).plan[day]:{},
@@ -6898,7 +6904,7 @@ Only output the JSON. No markdown.`;
     swapLoading: swapLoading,
     nutFlags: nutrition[day] || [],
     dishes: dishes,
-    onConfirmDay: menu && menu.plan ? confirmDay : null,
+    onConfirmDay: (nextMenu||menu) && (nextMenu||menu).plan ? confirmDay : null,
     isConfirmed: !!(confirmedDays && confirmedDays[day]),
     onSaveDish: {
       saved: name => dishes.some(d => d.name === name),
@@ -8724,6 +8730,8 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
 
 
 
