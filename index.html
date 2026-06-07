@@ -383,6 +383,29 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -2623,7 +2646,98 @@ const DEFAULT_ITEMS = [
   name: "Toothpicks",
   type: "binary",
   cat: "other"
-}];
+}// NEW DEFAULT_ITEMS to append (IDs 2001-2044)
+, {
+  id: 2001, name: "Arborio Rice", type: "binary", cat: "grain"
+}, {
+  id: 2002, name: "Miso Paste", type: "binary", cat: "condiment"
+}, {
+  id: 2003, name: "Rice Vinegar", type: "binary", cat: "condiment"
+}, {
+  id: 2004, name: "Dashi Stock", type: "binary", cat: "condiment"
+}, {
+  id: 2005, name: "Mirin", type: "binary", cat: "condiment"
+}, {
+  id: 2006, name: "Sake", type: "binary", cat: "condiment"
+}, {
+  id: 2007, name: "Panko Breadcrumbs", type: "binary", cat: "condiment"
+}, {
+  id: 2008, name: "Thai Red Curry Paste", type: "binary", cat: "condiment"
+}, {
+  id: 2009, name: "Thai Green Curry Paste", type: "binary", cat: "condiment"
+}, {
+  id: 2010, name: "Galangal", type: "binary", cat: "spice"
+}, {
+  id: 2011, name: "Shrimp Paste", type: "binary", cat: "condiment"
+}, {
+  id: 2012, name: "Palm Sugar", type: "binary", cat: "staples"
+}, {
+  id: 2013, name: "Chipotle", type: "binary", cat: "spice"
+}, {
+  id: 2014, name: "Jalapeños", type: "binary", cat: "condiment"
+}, {
+  id: 2015, name: "Corn Tortillas", type: "binary", cat: "bakery"
+}, {
+  id: 2016, name: "Black Olives", type: "binary", cat: "condiment"
+}, {
+  id: 2017, name: "Capers", type: "binary", cat: "condiment"
+}, {
+  id: 2018, name: "Feta Cheese", type: "binary", cat: "dairy"
+}, {
+  id: 2019, name: "Sumac", type: "binary", cat: "spice"
+}, {
+  id: 2020, name: "Baharat", type: "binary", cat: "spice"
+}, {
+  id: 2021, name: "Freekeh", type: "binary", cat: "grain"
+}, {
+  id: 2022, name: "Rose Water", type: "binary", cat: "condiment"
+}, {
+  id: 2023, name: "Bulgur Wheat", type: "binary", cat: "grain"
+}, {
+  id: 2024, name: "Dijon Mustard", type: "binary", cat: "condiment"
+}, {
+  id: 2025, name: "Creme Fraiche", type: "binary", cat: "dairy"
+}, {
+  id: 2026, name: "Gruyere", type: "binary", cat: "dairy"
+}, {
+  id: 2027, name: "Shallots", type: "binary", cat: "veg"
+}, {
+  id: 2028, name: "White Wine", type: "binary", cat: "condiment"
+}, {
+  id: 2029, name: "Bacon", type: "binary", cat: "protein"
+}, {
+  id: 2030, name: "Maple Syrup", type: "binary", cat: "condiment"
+}, {
+  id: 2031, name: "Nutritional Yeast", type: "binary", cat: "condiment"
+}, {
+  id: 2032, name: "Tempeh", type: "binary", cat: "protein"
+}, {
+  id: 2033, name: "Edamame", type: "binary", cat: "protein"
+}, {
+  id: 2034, name: "Jackfruit", type: "binary", cat: "veg"
+}, {
+  id: 2035, name: "Spring Roll Wrappers", type: "binary", cat: "bakery"
+}, {
+  id: 2036, name: "Wonton Wrappers", type: "binary", cat: "bakery"
+}, {
+  id: 2037, name: "Anchovies", type: "binary", cat: "protein"
+}, {
+  id: 2038, name: "Chorizo", type: "binary", cat: "protein"
+}, {
+  id: 2039, name: "Smoked Paprika", type: "binary", cat: "spice"
+}, {
+  id: 2040, name: "Harissa", type: "binary", cat: "condiment"
+}, {
+  id: 2041, name: "Preserved Lemon", type: "binary", cat: "condiment"
+}, {
+  id: 2042, name: "Bean Sprouts", type: "binary", cat: "veg"
+}, {
+  id: 2043, name: "Kale", type: "binary", cat: "veg"
+}, {
+  id: 2044, name: "Udon Noodles", type: "binary", cat: "grain"
+}
+
+];
 const DEFAULT_MEAL_CATS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WEEKEND = ["Saturday", "Sunday"];
@@ -2643,6 +2757,7 @@ const SK = {
   autoBackup: "pantryos-autobackup",
   autoNutrition: "pantryos-autonut",
   haptics: "pantryos-haptics",
+  cuisines: "pantryos-cuisines",
   dietary: "pantryos-dietary",
   macros: "pantryos-macros",
   theme: "pantryos-theme",
@@ -2658,7 +2773,7 @@ const SK = {
 // ─────────────────────────────────────────────────────────────────────────────
 //  VERSION & MIGRATION SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
-const CURRENT_VERSION = 5;
+const CURRENT_VERSION = 6;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
@@ -2837,8 +2952,534 @@ const MIGRATIONS = {
       });
     }
     return data;
+  },
+  5: function(data) {
+    try{var oD=localStorage.getItem("pantryos-dietary");if(oD){var od=JSON.parse(oD);if(od&&od["Vegan"])localStorage.setItem("pantryos-cuisines",JSON.stringify(["vegan"]));}localStorage.removeItem("pantryos-dietary");}catch(e){}
+    if(data.items&&Array.isArray(data.items)){var uN=new Set(data.items.map(function(i){return i.name.toLowerCase().trim();}));var now=Date.now();DEFAULT_ITEMS.forEach(function(di,idx){if(di.id>=2001&&!uN.has(di.name.toLowerCase().trim()))data.items.push(Object.assign({},di,{id:now+idx}));});}
+    return data;
   }
 };
+
+var CUISINE_PRESETS = {
+  "east_asian": {
+    label: "East Asian", emoji: "🍜",
+    desc: "Stir Fry · Fried Rice · Noodle Soup",
+    items: ["Bean Sprouts", "Black Garlic", "Bok Choy", "Broccoli", "Cabbage", "Capsicum", "Carrots", "Chicken Breast", "Chilli Sauce", "Corn Flour", "Cucumber", "Dashi Stock", "Dried Ginger", "Dried Red Chilli", "Edamame", "Eggs", "Fish Sauce", "Garlic", "Ginger", "Gochujang", "Green Tea", "Hoisin Sauce", "Instant Noodles", "Korean Gochugaru", "Mirin", "Miso Paste", "Mushrooms", "Noodles", "Nori Sheets", "Onions", "Oyster Sauce", "Panko Breadcrumbs", "Peppercorn", "Radish", "Rice Cakes", "Rice Noodles", "Rice Vinegar", "Sake", "Salt", "Sesame Oil", "Sesame Seeds", "Shiro Miso", "Sichuan Peppercorn", "Soy Sauce", "Spring Onion", "Spring Roll Wrappers", "Sriracha", "Star Anise", "Sushi Rice", "Tofu", "Udon Noodles", "Vinegar", "Wasabi", "White Pepper Powder", "White Rice", "Wonton Wrappers"],
+    dishes: [
+      {name:"Congee",mealCats:["Breakfast"],ingredients:["White Rice","Ginger","Spring Onion","Soy Sauce"]},
+      {name:"Steamed Eggs",mealCats:["Breakfast"],ingredients:["Eggs","Soy Sauce","Sesame Oil","Spring Onion"]},
+      {name:"Egg Fried Rice",mealCats:["Breakfast"],ingredients:["White Rice","Eggs","Soy Sauce","Spring Onion","Garlic"]},
+      {name:"Korean Porridge",mealCats:["Breakfast"],ingredients:["White Rice","Mushrooms","Sesame Oil","Soy Sauce","Garlic"]},
+      {name:"Miso Soup with Tofu",mealCats:["Breakfast"],ingredients:["Tofu","Miso Paste","Spring Onion"]},
+      {name:"Scallion Pancakes",mealCats:["Breakfast"],ingredients:["Wheat Flour","Spring Onion","Sesame Oil"]},
+      {name:"Korean Egg Toast",mealCats:["Breakfast"],ingredients:["Eggs","White Bread","Cabbage","Carrots","Onions"]},
+      {name:"Rice with Nori",mealCats:["Breakfast"],ingredients:["White Rice","Nori Sheets","Soy Sauce","Sesame Oil"]},
+      {name:"Soy Milk Oats",mealCats:["Breakfast"],ingredients:["Oats","Sesame Oil","Honey","Sesame Seeds"]},
+      {name:"Tamago Gohan",mealCats:["Breakfast"],ingredients:["Eggs","White Rice","Soy Sauce","Sesame Oil"]},
+      {name:"Chicken Fried Rice",mealCats:["Lunch"],ingredients:["White Rice","Chicken Breast","Eggs","Soy Sauce","Spring Onion","Garlic"]},
+      {name:"Noodle Soup",mealCats:["Lunch"],ingredients:["Noodles","Tofu","Soy Sauce","Ginger","Spring Onion","Bok Choy"]},
+      {name:"Mapo Tofu",mealCats:["Lunch"],ingredients:["Tofu","Gochujang","Soy Sauce","Ginger","Garlic","Spring Onion"]},
+      {name:"Bibimbap",mealCats:["Lunch"],ingredients:["White Rice","Spinach","Carrots","Mushrooms","Eggs","Gochujang"]},
+      {name:"Stir Fried Bok Choy",mealCats:["Lunch"],ingredients:["Bok Choy","Carrots","Mushrooms","Soy Sauce","Oyster Sauce","Garlic"]},
+      {name:"Dan Dan Noodles",mealCats:["Lunch"],ingredients:["Noodles","Peanut Butter","Soy Sauce","Garlic","Ginger","Sesame Oil"]},
+      {name:"Kimchi Fried Rice",mealCats:["Lunch"],ingredients:["White Rice","Gochujang","Eggs","Sesame Oil","Spring Onion"]},
+      {name:"Sweet and Sour Tofu",mealCats:["Lunch"],ingredients:["Tofu","Capsicum","Corn Flour","Soy Sauce","Vinegar","Honey"]},
+      {name:"Hot and Sour Soup",mealCats:["Lunch"],ingredients:["Tofu","Mushrooms","Eggs","Corn Flour","Soy Sauce","Vinegar"]},
+      {name:"Kung Pao Tofu",mealCats:["Lunch"],ingredients:["Tofu","Capsicum","Peanuts","Soy Sauce","Gochujang","Garlic"]},
+      {name:"Edamame with Salt",mealCats:["Snacks"],ingredients:["Edamame","Sesame Oil"]},
+      {name:"Spring Rolls",mealCats:["Snacks"],ingredients:["Spring Roll Wrappers","Carrots","Cabbage","Noodles","Soy Sauce"]},
+      {name:"Gyoza",mealCats:["Snacks"],ingredients:["Wonton Wrappers","Cabbage","Ginger","Soy Sauce","Sesame Oil"]},
+      {name:"Sesame Noodles",mealCats:["Snacks"],ingredients:["Noodles","Sesame Oil","Soy Sauce","Ginger","Spring Onion"]},
+      {name:"Cucumber Kimchi",mealCats:["Snacks"],ingredients:["Cucumber","Gochujang","Garlic","Sesame Seeds"]},
+      {name:"Crispy Tofu Bites",mealCats:["Snacks"],ingredients:["Tofu","Corn Flour","Soy Sauce","Sesame Oil","Garlic"]},
+      {name:"Rice Paper Rolls",mealCats:["Snacks"],ingredients:["Rice Noodles","Carrots","Cucumber","Coriander","Soy Sauce"]},
+      {name:"Miso Glazed Edamame",mealCats:["Snacks"],ingredients:["Edamame","Miso Paste","Honey","Sesame Oil"]},
+      {name:"Wonton Soup",mealCats:["Snacks"],ingredients:["Wonton Wrappers","Cabbage","Ginger","Soy Sauce","Spring Onion"]},
+      {name:"Steamed Buns",mealCats:["Snacks"],ingredients:["Wheat Flour","Mushrooms","Soy Sauce","Sesame Oil","Spring Onion"]},
+      {name:"Ramen",mealCats:["Dinner"],ingredients:["Noodles","Soy Sauce","Miso Paste","Mushrooms","Eggs","Bok Choy","Ginger"]},
+      {name:"Korean BBQ Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Gochujang","Soy Sauce","Garlic","Sesame Oil","Honey"]},
+      {name:"Tofu Stir Fry",mealCats:["Dinner"],ingredients:["Tofu","Bok Choy","Mushrooms","Soy Sauce","Oyster Sauce","Garlic"]},
+      {name:"Steamed Fish",mealCats:["Dinner"],ingredients:["Salmon","Soy Sauce","Ginger","Spring Onion","Sesame Oil"]},
+      {name:"Miso Glazed Salmon",mealCats:["Dinner"],ingredients:["Salmon","Miso Paste","Mirin","Soy Sauce"]},
+      {name:"Udon Noodle Soup",mealCats:["Dinner"],ingredients:["Udon Noodles","Soy Sauce","Miso Paste","Bok Choy","Mushrooms","Spring Onion"]},
+      {name:"General Tso Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Soy Sauce","Gochujang","Garlic","Ginger","Corn Flour"]},
+      {name:"Hot Pot Vegetables",mealCats:["Dinner"],ingredients:["Bok Choy","Mushrooms","Tofu","Noodles","Soy Sauce","Sesame Oil"]},
+      {name:"Teriyaki Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Soy Sauce","Mirin","Honey","Garlic","Ginger"]},
+      {name:"Vegetable Fried Noodles",mealCats:["Dinner"],ingredients:["Noodles","Cabbage","Carrots","Bean Sprouts","Soy Sauce","Sesame Oil","Eggs"]}
+    ]
+  },
+  "north_indian": {
+    label: "North Indian", emoji: "🇮🇳",
+    desc: "Dal · Paneer · Biryani",
+    items: ["Asafoetida", "Aubergine", "Basmati Rice", "Biryani Masala", "Biscuits", "Black Pepper", "Bottle Gourd", "Brinjal", "Butter", "Buttermilk", "Cardamom", "Cashews", "Cauliflower", "Chaat Masala", "Chana Dal", "Channa Masala", "Chicken Breast", "Chickpea Flour", "Chickpeas", "Cloves", "Coriander", "Coriander Powder", "Cumin Powder", "Cumin Seeds", "Curd", "Dried Ginger", "Dried Red Chilli", "Dry Mango Powder", "Eggs", "Fennel Seeds", "Fenugreek Seeds", "Fresh Cream", "Fried Onions", "Frozen Chicken", "Frozen Paratha", "Frozen Peas", "Garam Masala", "Garlic", "Ghee", "Ginger", "Ginger Garlic Paste", "Green Chilli", "Green Chutney", "Guava", "Jaggery", "Kashmiri Chilli", "Kasturi Methi", "Lassi", "Lentils", "Maggi", "Mango", "Mango Pickle", "Masoor Dal", "Meal Maker", "Milk", "Millet", "Mint", "Moong Dal", "Mustard Seeds", "Mutton", "Mutton Masala", "Naan", "Namkeen", "Onions", "Paneer", "Papad", "Paratha", "Peas", "Pickle", "Poha", "Poha Chivda", "Potatoes", "Raisins", "Rajma", "Red Chilli Powder", "Rice Papad", "Roti", "Saffron", "Salt", "Semolina", "Spiced Buttermilk", "Spinach", "Sugar", "Tamarind Paste", "Tea", "Tomatoes", "Toor Dal", "Turmeric Powder", "Urad Dal", "Vermicelli", "Wheat Flour", "White Bread", "Yogurt"],
+    dishes: [
+      {name:"Aloo Paratha",mealCats:["Breakfast"],ingredients:["Wheat Flour","Potatoes","Ghee","Cumin Seeds","Coriander"]},
+      {name:"Poha",mealCats:["Breakfast"],ingredients:["Poha","Onions","Green Chilli","Mustard Seeds","Turmeric Powder","Curry Leaves"]},
+      {name:"Besan Chilla",mealCats:["Breakfast"],ingredients:["Chickpea Flour","Onions","Green Chilli","Coriander"]},
+      {name:"Bread Omelette",mealCats:["Breakfast"],ingredients:["Eggs","White Bread","Onions","Green Chilli","Butter"]},
+      {name:"Upma",mealCats:["Breakfast"],ingredients:["Semolina","Onions","Green Chilli","Mustard Seeds","Curry Leaves"]},
+      {name:"Moong Dal Chilla",mealCats:["Breakfast"],ingredients:["Moong Dal","Ginger","Coriander","Green Chilli"]},
+      {name:"Paneer Bhurji Toast",mealCats:["Breakfast"],ingredients:["Paneer","Eggs","Onions","Tomatoes","White Bread"]},
+      {name:"Dal Paratha",mealCats:["Breakfast"],ingredients:["Toor Dal","Wheat Flour","Ghee","Cumin Seeds","Coriander"]},
+      {name:"Masala Omelette",mealCats:["Breakfast"],ingredients:["Eggs","Onions","Tomatoes","Green Chilli","Coriander"]},
+      {name:"Rava Idli",mealCats:["Breakfast"],ingredients:["Semolina","Yogurt","Mustard Seeds","Curry Leaves","Coriander"]},
+      {name:"Dal Tadka with Rice",mealCats:["Lunch"],ingredients:["Toor Dal","Ghee","Cumin Seeds","Garlic","Tomatoes"]},
+      {name:"Rajma Chawal",mealCats:["Lunch"],ingredients:["Rajma","Basmati Rice","Onions","Tomatoes","Garam Masala"]},
+      {name:"Chole Chawal",mealCats:["Lunch"],ingredients:["Chickpeas","Basmati Rice","Onions","Tomatoes","Cumin Seeds"]},
+      {name:"Palak Paneer",mealCats:["Lunch"],ingredients:["Paneer","Spinach","Onions","Tomatoes","Garlic","Ginger"]},
+      {name:"Aloo Matar",mealCats:["Lunch"],ingredients:["Potatoes","Peas","Onions","Tomatoes","Cumin Seeds"]},
+      {name:"Kadhi Chawal",mealCats:["Lunch"],ingredients:["Yogurt","Chickpea Flour","Basmati Rice","Mustard Seeds"]},
+      {name:"Paneer Butter Masala",mealCats:["Lunch"],ingredients:["Paneer","Butter","Tomatoes","Fresh Cream","Garam Masala"]},
+      {name:"Baingan Bharta",mealCats:["Lunch"],ingredients:["Brinjal","Onions","Tomatoes","Garlic","Coriander"]},
+      {name:"Jeera Rice with Dal Fry",mealCats:["Lunch"],ingredients:["Basmati Rice","Toor Dal","Ghee","Cumin Seeds","Garlic"]},
+      {name:"Aloo Gobi",mealCats:["Lunch"],ingredients:["Potatoes","Cauliflower","Cumin Seeds","Turmeric Powder","Coriander Powder"]},
+      {name:"Chana Chaat",mealCats:["Snacks"],ingredients:["Chickpeas","Onions","Tomatoes","Coriander","Lemons"]},
+      {name:"Aloo Tikki",mealCats:["Snacks"],ingredients:["Potatoes","White Bread","Cumin Seeds","Coriander","Green Chilli"]},
+      {name:"Onion Pakoda",mealCats:["Snacks"],ingredients:["Onions","Chickpea Flour","Green Chilli","Cumin Seeds"]},
+      {name:"Roasted Chana",mealCats:["Snacks"],ingredients:["Chickpeas","Cumin Powder","Red Chilli Powder","Lemons"]},
+      {name:"Peanut Chaat",mealCats:["Snacks"],ingredients:["Peanuts","Onions","Tomatoes","Coriander","Lemons"]},
+      {name:"Bread Upma",mealCats:["Snacks"],ingredients:["White Bread","Onions","Green Chilli","Mustard Seeds","Curry Leaves"]},
+      {name:"Boiled Eggs Masala",mealCats:["Snacks"],ingredients:["Eggs","Red Chilli Powder","Cumin Seeds","Coriander"]},
+      {name:"Moong Dal Chaat",mealCats:["Snacks"],ingredients:["Moong Dal","Onions","Tomatoes","Coriander","Lemons"]},
+      {name:"Samosa Wrap",mealCats:["Snacks"],ingredients:["Potatoes","Wheat Flour","Peas","Cumin Seeds","Coriander"]},
+      {name:"Besan Ladoo",mealCats:["Snacks"],ingredients:["Chickpea Flour","Ghee","Sugar","Cardamom"]},
+      {name:"Dal Makhani",mealCats:["Dinner"],ingredients:["Urad Dal","Rajma","Butter","Fresh Cream","Tomatoes","Garam Masala"]},
+      {name:"Butter Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Butter","Fresh Cream","Tomatoes","Garam Masala","Ginger"]},
+      {name:"Paneer Tikka Masala",mealCats:["Dinner"],ingredients:["Paneer","Yogurt","Onions","Tomatoes","Garam Masala"]},
+      {name:"Chana Masala",mealCats:["Dinner"],ingredients:["Chickpeas","Onions","Tomatoes","Ginger","Cumin Seeds"]},
+      {name:"Mutton Curry",mealCats:["Dinner"],ingredients:["Mutton","Onions","Tomatoes","Yogurt","Garam Masala","Garlic"]},
+      {name:"Egg Curry",mealCats:["Dinner"],ingredients:["Eggs","Onions","Tomatoes","Garlic","Ginger","Garam Masala"]},
+      {name:"Vegetable Biryani",mealCats:["Dinner"],ingredients:["Basmati Rice","Carrots","Peas","Yogurt","Saffron","Garam Masala"]},
+      {name:"Chicken Biryani",mealCats:["Dinner"],ingredients:["Basmati Rice","Chicken Breast","Yogurt","Saffron","Garam Masala","Onions"]},
+      {name:"Keema Matar",mealCats:["Dinner"],ingredients:["Mutton","Peas","Onions","Tomatoes","Garlic","Garam Masala"]},
+      {name:"Fish Curry North Indian",mealCats:["Dinner"],ingredients:["Salmon","Onions","Tomatoes","Turmeric Powder","Red Chilli Powder","Yogurt"]}
+    ]
+  },
+  "south_indian": {
+    label: "South Indian", emoji: "🥥",
+    desc: "Dosa · Idli · Sambar",
+    items: ["Asafoetida", "Bananas", "Basmati Rice", "Bisibelebath Powder", "Bitter Gourd", "Black Pepper", "Boneless Basa Cubes", "Bottle Gourd", "Brinjal", "Buttermilk", "Cabbage", "Cardamom", "Cashews", "Cauliflower", "Chaat Masala", "Chana Dal", "Chicken 65 Powder", "Chickpea Flour", "Cloves", "Coconut", "Coconut Flakes", "Coconut Grated", "Coconut Milk", "Coconut Oil", "Coconut Water", "Condensed Milk", "Coriander", "Coriander Powder", "Cumin Powder", "Cumin Seeds", "Curd", "Curry Leaves", "Curry Powder", "Dosa Batter", "Dried Red Chilli", "Drumstick", "Eggs", "Fennel Seeds", "Fenugreek Seeds", "Fish Fillet", "Frozen Dosa Batter", "Frozen Fish", "Frozen Idli", "Frozen Prawns", "Garlic", "Ghee", "Ginger", "Ginger Garlic Paste", "Green Chilli", "Green Chutney", "Guava", "Jackfruit", "Jaggery", "Lassi", "Lentils", "Mango", "Mango Pickle", "Masoor Dal", "Meal Maker", "Millet", "Moong Dal", "Murukku", "Mustard Seeds", "Mutton Masala", "Namkeen", "Onions", "Papad", "Papaya", "Peanuts", "Plantain", "Poha", "Poha Chivda", "Prawns", "Radish", "Red Chilli Powder", "Rice Flour", "Rice Papad", "Ridge Gourd", "Roasted Gram Dal", "Roti", "Salt", "Sambar Powder", "Semolina", "Spiced Buttermilk", "Sugar", "Tamarind", "Tamarind Paste", "Tea", "Tomatoes", "Toor Dal", "Turmeric Powder", "Urad Dal", "Vermicelli", "Wheat Flour", "White Rice", "Yogurt"],
+    dishes: [
+      {name:"Dosa",mealCats:["Breakfast"],ingredients:["Dosa Batter","Coconut Oil","Mustard Seeds"]},
+      {name:"Idli Sambar",mealCats:["Breakfast"],ingredients:["Dosa Batter","Toor Dal","Tomatoes","Sambar Powder","Tamarind","Mustard Seeds","Curry Leaves"]},
+      {name:"Upma",mealCats:["Breakfast","Snacks"],ingredients:["Semolina","Onions","Green Chilli","Mustard Seeds","Curry Leaves","Peanuts"]},
+      {name:"Poha",mealCats:["Breakfast"],ingredients:["Poha","Onions","Green Chilli","Mustard Seeds","Turmeric Powder","Curry Leaves","Peanuts"]},
+      {name:"Pongal",mealCats:["Breakfast"],ingredients:["White Rice","Moong Dal","Ghee","Cumin Seeds","Peppercorn","Curry Leaves"]},
+      {name:"Rava Dosa",mealCats:["Breakfast"],ingredients:["Semolina","Rice Flour","Onions","Green Chilli","Coriander","Coconut Oil"]},
+      {name:"Coconut Chutney Toast",mealCats:["Breakfast"],ingredients:["White Bread","Coconut Grated","Green Chilli","Ginger","Mustard Seeds","Curry Leaves"]},
+      {name:"Medu Vada",mealCats:["Breakfast","Snacks"],ingredients:["Urad Dal","Onions","Green Chilli","Coriander","Coconut Oil"]},
+      {name:"Oats Pongal",mealCats:["Breakfast"],ingredients:["Oats","Moong Dal","Ghee","Cumin Seeds","Curry Leaves","Peppercorn"]},
+      {name:"Banana Oats",mealCats:["Breakfast"],ingredients:["Oats","Bananas","Coconut Milk","Honey","Coconut Grated"]},
+      {name:"Sambar Rice",mealCats:["Lunch"],ingredients:["White Rice","Toor Dal","Tomatoes","Drumstick","Sambar Powder","Tamarind","Mustard Seeds","Curry Leaves"]},
+      {name:"Curd Rice",mealCats:["Lunch"],ingredients:["White Rice","Yogurt","Mustard Seeds","Curry Leaves","Green Chilli","Ginger"]},
+      {name:"Bisibele Bath",mealCats:["Lunch"],ingredients:["White Rice","Toor Dal","Carrots","Peas","Bisibelebath Powder","Tamarind","Ghee","Cashews"]},
+      {name:"Lemon Rice",mealCats:["Lunch"],ingredients:["White Rice","Lemons","Mustard Seeds","Curry Leaves","Peanuts","Turmeric Powder"]},
+      {name:"Rasam Rice",mealCats:["Lunch"],ingredients:["White Rice","Tomatoes","Tamarind","Black Pepper","Cumin Seeds","Curry Leaves","Ghee"]},
+      {name:"Kootu",mealCats:["Lunch"],ingredients:["Lentils","Coconut Grated","Cumin Seeds","Turmeric Powder","Mustard Seeds","Curry Leaves"]},
+      {name:"Avial",mealCats:["Lunch"],ingredients:["Carrots","Drumstick","Plantain","Coconut Grated","Yogurt","Coconut Oil","Curry Leaves"]},
+      {name:"Puliyogare",mealCats:["Lunch"],ingredients:["White Rice","Tamarind","Peanuts","Mustard Seeds","Curry Leaves","Sesame Seeds"]},
+      {name:"Dal with Rice",mealCats:["Lunch"],ingredients:["Toor Dal","White Rice","Ghee","Cumin Seeds","Tomatoes","Onions"]},
+      {name:"Veg Kurma",mealCats:["Lunch"],ingredients:["Carrots","Peas","Potatoes","Coconut Milk","Onions","Tomatoes","Cashews","Garam Masala"]},
+      {name:"Murukku",mealCats:["Snacks"],ingredients:["Rice Flour","Chickpea Flour","Cumin Seeds","Asafoetida","Coconut Oil"]},
+      {name:"Coconut Chutney",mealCats:["Snacks"],ingredients:["Coconut Grated","Green Chilli","Ginger","Mustard Seeds","Curry Leaves"]},
+      {name:"Sundal",mealCats:["Snacks"],ingredients:["Chickpeas","Mustard Seeds","Curry Leaves","Coconut Grated","Green Chilli"]},
+      {name:"Banana Chips",mealCats:["Snacks"],ingredients:["Plantain","Coconut Oil","Turmeric Powder"]},
+      {name:"Appam with Coconut Milk",mealCats:["Snacks","Breakfast"],ingredients:["Dosa Batter","Coconut Milk","Sugar","Coconut Oil"]},
+      {name:"Vadai",mealCats:["Snacks"],ingredients:["Urad Dal","Onions","Green Chilli","Coriander","Curry Leaves","Coconut Oil"]},
+      {name:"Peanut Sundal",mealCats:["Snacks"],ingredients:["Peanuts","Mustard Seeds","Curry Leaves","Green Chilli","Coconut Grated"]},
+      {name:"Tamarind Rice Balls",mealCats:["Snacks"],ingredients:["White Rice","Tamarind","Peanuts","Sesame Seeds","Mustard Seeds"]},
+      {name:"Rava Ladoo",mealCats:["Snacks"],ingredients:["Semolina","Sugar","Ghee","Cardamom","Cashews"]},
+      {name:"Cucumber Raita",mealCats:["Snacks"],ingredients:["Cucumber","Yogurt","Mustard Seeds","Curry Leaves","Green Chilli"]},
+      {name:"Fish Curry South Indian",mealCats:["Dinner"],ingredients:["Salmon","Coconut Milk","Tomatoes","Onions","Tamarind","Turmeric Powder","Curry Leaves"]},
+      {name:"Chicken Chettinad",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Tomatoes","Coconut Grated","Garam Masala","Curry Leaves","Peppercorn"]},
+      {name:"Prawn Masala",mealCats:["Dinner"],ingredients:["Prawns","Onions","Tomatoes","Coconut Grated","Turmeric Powder","Red Chilli Powder","Curry Leaves"]},
+      {name:"Mutton Kuzhambu",mealCats:["Dinner"],ingredients:["Mutton","Onions","Tomatoes","Coconut Grated","Tamarind","Garam Masala","Curry Leaves"]},
+      {name:"Egg Masala",mealCats:["Dinner"],ingredients:["Eggs","Onions","Tomatoes","Coconut Grated","Turmeric Powder","Red Chilli Powder"]},
+      {name:"Paneer Butter Masala South",mealCats:["Dinner"],ingredients:["Paneer","Butter","Tomatoes","Fresh Cream","Garam Masala","Cashews"]},
+      {name:"Chicken Biryani South",mealCats:["Dinner"],ingredients:["Basmati Rice","Chicken Breast","Yogurt","Onions","Garam Masala","Saffron","Ghee"]},
+      {name:"Vegetable Stew",mealCats:["Dinner"],ingredients:["Potatoes","Carrots","Peas","Coconut Milk","Onions","Green Chilli","Curry Leaves"]},
+      {name:"Kathirikkai Gravy",mealCats:["Dinner"],ingredients:["Brinjal","Onions","Tomatoes","Tamarind","Coconut Grated","Mustard Seeds","Curry Leaves"]},
+      {name:"Poriyal",mealCats:["Dinner"],ingredients:["Cabbage","Carrots","Coconut Grated","Mustard Seeds","Curry Leaves","Turmeric Powder"]}
+    ]
+  },
+  "italian": {
+    label: "Italian", emoji: "🇮🇹",
+    desc: "Pasta · Risotto · Pizza",
+    items: ["00 Flour", "All-Purpose Flour", "Anchovies", "Arborio Rice", "Asparagus", "Aubergine", "Baking Soda", "Basil", "Bay Leaves", "Black Garlic", "Black Olives", "Black Pepper", "Brinjal", "Broccoli", "Butter", "Capers", "Capsicum", "Carrots", "Cauliflower", "Celery", "Cheese", "Chicken Breast", "Chickpeas", "Chorizo", "Coffee", "Dhurum Wheat", "Dill", "Dried Garlic", "Eggs", "Fennel Seeds", "Feta Cheese", "Fish Fillet", "Fresh Cream", "Frozen Pizza", "Frozen Prawns", "Garlic", "Gouda", "Hazelnuts", "Ice Cream", "Lemons", "Lentils", "Milk", "Mozzarella", "Mushrooms", "Nutmeg", "Olive Oil", "Onions", "Oregano", "Paprika", "Parmesan", "Parsley", "Pasta", "Penne", "Pepper Flakes", "Peppercorn", "Pesto", "Pine Nuts", "Pizza Bread", "Prawns", "Pumpkin", "Rocket", "Rosemary", "Saffron", "Sage", "Salmon", "Salt", "Semolina", "Shallots", "Spaghetti", "Sparkling Water", "Spinach", "Sugar", "Thyme", "Tomato Paste", "Tomato Puree", "Tomatoes", "Truffle Olive Oil", "Vinegar", "White Bread", "White Wine", "Yeast", "Zucchini"],
+    dishes: [
+      {name:"Frittata",mealCats:["Breakfast"],ingredients:["Eggs","Zucchini","Capsicum","Onions","Olive Oil","Parmesan"]},
+      {name:"Bruschetta",mealCats:["Breakfast","Snacks"],ingredients:["White Bread","Tomatoes","Garlic","Basil","Olive Oil"]},
+      {name:"Eggs in Tomato Sauce",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Garlic","Basil","Olive Oil"]},
+      {name:"Caprese Toast",mealCats:["Breakfast"],ingredients:["White Bread","Mozzarella","Tomatoes","Basil","Olive Oil"]},
+      {name:"Italian Omelette",mealCats:["Breakfast"],ingredients:["Eggs","Onions","Capsicum","Olive Oil","Parmesan"]},
+      {name:"Focaccia Toast",mealCats:["Breakfast","Snacks"],ingredients:["White Bread","Olive Oil","Oregano","Garlic"]},
+      {name:"Ricotta Pancakes",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Eggs","Milk","Lemon","Honey"]},
+      {name:"Garlic Mushrooms on Toast",mealCats:["Breakfast"],ingredients:["Mushrooms","Garlic","White Bread","Olive Oil","Parsley","Thyme"]},
+      {name:"Tomato and Egg Scramble",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Basil","Olive Oil","Parmesan"]},
+      {name:"Zucchini Fritters",mealCats:["Breakfast","Snacks"],ingredients:["Zucchini","Eggs","All-Purpose Flour","Parmesan","Garlic"]},
+      {name:"Spaghetti Aglio e Olio",mealCats:["Lunch"],ingredients:["Spaghetti","Garlic","Olive Oil","Pepper Flakes","Parsley"]},
+      {name:"Penne Arrabbiata",mealCats:["Lunch"],ingredients:["Penne","Tomatoes","Garlic","Pepper Flakes","Olive Oil","Basil"]},
+      {name:"Pasta al Pomodoro",mealCats:["Lunch"],ingredients:["Pasta","Tomatoes","Garlic","Basil","Olive Oil","Parmesan"]},
+      {name:"Lentil Pasta",mealCats:["Lunch"],ingredients:["Pasta","Lentils","Tomatoes","Garlic","Olive Oil","Rosemary"]},
+      {name:"Pasta Primavera",mealCats:["Lunch"],ingredients:["Penne","Zucchini","Capsicum","Tomatoes","Olive Oil","Parmesan"]},
+      {name:"Minestrone Soup",mealCats:["Lunch"],ingredients:["Pasta","Tomatoes","Carrots","Zucchini","Lentils","Olive Oil","Basil"]},
+      {name:"Pasta with Anchovies",mealCats:["Lunch"],ingredients:["Spaghetti","Anchovies","Garlic","Olive Oil","Capers","Black Olives"]},
+      {name:"Pasta e Fagioli",mealCats:["Lunch"],ingredients:["Pasta","Lentils","Tomatoes","Garlic","Rosemary","Olive Oil"]},
+      {name:"Risotto Milanese",mealCats:["Lunch"],ingredients:["Arborio Rice","Onions","White Wine","Parmesan","Butter","Saffron"]},
+      {name:"Mushroom Risotto",mealCats:["Lunch"],ingredients:["Arborio Rice","Mushrooms","Onions","Parmesan","Butter","White Wine","Garlic"]},
+      {name:"Bruschetta with Tomato",mealCats:["Snacks"],ingredients:["White Bread","Tomatoes","Garlic","Basil","Olive Oil"]},
+      {name:"Caprese Salad",mealCats:["Snacks"],ingredients:["Mozzarella","Tomatoes","Basil","Olive Oil"]},
+      {name:"Garlic Bread",mealCats:["Snacks"],ingredients:["White Bread","Garlic","Butter","Parsley"]},
+      {name:"Olive and Caper Platter",mealCats:["Snacks"],ingredients:["Black Olives","Capers","Olive Oil","White Bread"]},
+      {name:"Parmesan Crisps",mealCats:["Snacks"],ingredients:["Parmesan","Black Pepper","Oregano"]},
+      {name:"Tomato Soup",mealCats:["Snacks"],ingredients:["Tomatoes","Garlic","Onions","Basil","Olive Oil","Fresh Cream"]},
+      {name:"Zucchini Boats",mealCats:["Snacks"],ingredients:["Zucchini","Tomatoes","Mozzarella","Basil","Olive Oil"]},
+      {name:"Anchovy Toast",mealCats:["Snacks"],ingredients:["White Bread","Anchovies","Capers","Olive Oil","Garlic"]},
+      {name:"Pasta Salad",mealCats:["Snacks"],ingredients:["Pasta","Black Olives","Capers","Tomatoes","Olive Oil","Basil"]},
+      {name:"Egg Crostini",mealCats:["Snacks"],ingredients:["White Bread","Eggs","Olive Oil","Parsley","Garlic"]},
+      {name:"Chicken Cacciatore",mealCats:["Dinner"],ingredients:["Chicken Breast","Tomatoes","Capsicum","Onions","Garlic","Oregano","Olive Oil"]},
+      {name:"Pasta Bolognese",mealCats:["Dinner"],ingredients:["Spaghetti","Onions","Tomatoes","Tomato Paste","Garlic","Olive Oil","Basil"]},
+      {name:"Salmon with Capers",mealCats:["Dinner"],ingredients:["Salmon","Capers","Lemon","Olive Oil","Garlic","Parsley"]},
+      {name:"Shrimp Pasta",mealCats:["Dinner"],ingredients:["Pasta","Prawns","Garlic","Olive Oil","Tomatoes","Basil","White Wine"]},
+      {name:"Pasta Puttanesca",mealCats:["Dinner"],ingredients:["Spaghetti","Anchovies","Capers","Black Olives","Tomatoes","Garlic","Olive Oil"]},
+      {name:"Risotto with Salmon",mealCats:["Dinner"],ingredients:["Arborio Rice","Salmon","Onions","White Wine","Parmesan","Butter","Dill"]},
+      {name:"Chicken Marsala",mealCats:["Dinner"],ingredients:["Chicken Breast","Mushrooms","White Wine","Butter","Garlic","Thyme"]},
+      {name:"Eggplant Parmigiana",mealCats:["Dinner"],ingredients:["Aubergine","Tomatoes","Mozzarella","Parmesan","Basil","Olive Oil"]},
+      {name:"Pasta al Forno",mealCats:["Dinner"],ingredients:["Penne","Tomatoes","Mozzarella","Parmesan","Basil","Olive Oil"]},
+      {name:"Osso Buco Style Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Carrots","Tomatoes","White Wine","Rosemary","Garlic"]}
+    ]
+  },
+  "mediterranean": {
+    label: "Mediterranean", emoji: "🫒",
+    desc: "Hummus · Falafel · Greek Salad",
+    items: ["Almonds", "Anchovies", "Arabic Bread", "Aubergine", "Basil", "Bay Leaves", "Beetroot", "Black Olives", "Black Pepper", "Brinjal", "Bulgur Wheat", "Capers", "Capsicum", "Carrots", "Cheese", "Chicken Breast", "Chickpeas", "Cinnamon", "Coriander", "Coriander Powder", "Couscous", "Cucumber", "Cumin Powder", "Cumin Seeds", "Dill", "Eggs", "Fennel Seeds", "Feta Cheese", "Figs", "Fish Fillet", "Garlic", "Grapes", "Harissa", "Hazelnut Dukah", "Herbal Tea", "Honey", "Hummus", "Lemons", "Lentils", "Lettuce", "Mint", "Mutton", "Olive Oil", "Onions", "Oranges", "Oregano", "Paprika", "Parsley", "Pepper Flakes", "Pine Nuts", "Pistachios", "Pita Bread", "Pomegranate", "Pomegranate Molasses", "Potatoes", "Prawns", "Preserved Lemon", "Quinoa", "Rosemary", "Salmon", "Salt", "Sesame Seeds", "Smoked Paprika", "Spinach", "Sumac", "Tahini", "Thyme", "Tomato Paste", "Tomato Puree", "Tomatoes", "Watermelon", "Yogurt", "Zatar", "Zucchini"],
+    dishes: [
+      {name:"Greek Yogurt Bowl",mealCats:["Breakfast"],ingredients:["Yogurt","Honey","Almonds","Strawberries","Mint"]},
+      {name:"Shakshuka",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Capsicum","Onions","Garlic","Cumin Powder","Smoked Paprika","Olive Oil"]},
+      {name:"Feta and Tomato Toast",mealCats:["Breakfast"],ingredients:["Pita Bread","Feta Cheese","Tomatoes","Olive Oil","Oregano"]},
+      {name:"Avocado and Hummus Toast",mealCats:["Breakfast"],ingredients:["Pita Bread","Tahini","Avocado","Lemon","Olive Oil"]},
+      {name:"Olive and Feta Omelette",mealCats:["Breakfast"],ingredients:["Eggs","Feta Cheese","Black Olives","Tomatoes","Olive Oil"]},
+      {name:"Tahini Banana Oats",mealCats:["Breakfast"],ingredients:["Oats","Tahini","Bananas","Honey","Sesame Seeds"]},
+      {name:"Lentil Soup Breakfast",mealCats:["Breakfast"],ingredients:["Lentils","Onions","Garlic","Cumin Powder","Lemon","Olive Oil","Parsley"]},
+      {name:"Mediterranean Egg Scramble",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Black Olives","Feta Cheese","Olive Oil","Oregano"]},
+      {name:"Couscous Porridge",mealCats:["Breakfast"],ingredients:["Couscous","Milk","Honey","Almonds","Pomegranate"]},
+      {name:"Pita with Labneh",mealCats:["Breakfast","Snacks"],ingredients:["Pita Bread","Yogurt","Olive Oil","Mint","Cumin Powder"]},
+      {name:"Falafel Bowl",mealCats:["Lunch"],ingredients:["Chickpeas","Parsley","Cumin Powder","Garlic","Olive Oil","Pita Bread","Tahini"]},
+      {name:"Greek Salad",mealCats:["Lunch"],ingredients:["Cucumber","Tomatoes","Black Olives","Feta Cheese","Onions","Olive Oil","Oregano"]},
+      {name:"Hummus and Veggie Bowl",mealCats:["Lunch"],ingredients:["Chickpeas","Tahini","Lemon","Garlic","Cucumber","Tomatoes","Pita Bread"]},
+      {name:"Tabbouleh",mealCats:["Lunch"],ingredients:["Bulgur Wheat","Parsley","Mint","Tomatoes","Lemon","Olive Oil","Onions"]},
+      {name:"Lentil Soup",mealCats:["Lunch"],ingredients:["Lentils","Onions","Garlic","Cumin Powder","Lemon","Olive Oil","Spinach"]},
+      {name:"Couscous Salad",mealCats:["Lunch"],ingredients:["Couscous","Cucumber","Tomatoes","Black Olives","Feta Cheese","Lemon","Olive Oil","Mint"]},
+      {name:"Stuffed Aubergine",mealCats:["Lunch"],ingredients:["Aubergine","Onions","Tomatoes","Garlic","Lentils","Olive Oil","Parsley"]},
+      {name:"Chickpea Spinach Stew",mealCats:["Lunch"],ingredients:["Chickpeas","Spinach","Tomatoes","Garlic","Cumin Powder","Smoked Paprika","Olive Oil"]},
+      {name:"Grilled Zucchini Salad",mealCats:["Lunch"],ingredients:["Zucchini","Feta Cheese","Mint","Lemon","Olive Oil","Capers"]},
+      {name:"Pita Wrap with Salad",mealCats:["Lunch"],ingredients:["Pita Bread","Cucumber","Tomatoes","Feta Cheese","Hummus","Olive Oil"]},
+      {name:"Hummus with Pita",mealCats:["Snacks"],ingredients:["Chickpeas","Tahini","Lemon","Garlic","Olive Oil","Pita Bread","Smoked Paprika"]},
+      {name:"Tzatziki",mealCats:["Snacks"],ingredients:["Yogurt","Cucumber","Garlic","Mint","Olive Oil","Lemon"]},
+      {name:"Marinated Olives",mealCats:["Snacks"],ingredients:["Black Olives","Olive Oil","Garlic","Thyme","Lemon"]},
+      {name:"Feta and Watermelon Bites",mealCats:["Snacks"],ingredients:["Feta Cheese","Watermelon","Mint","Olive Oil"]},
+      {name:"Caponata",mealCats:["Snacks"],ingredients:["Aubergine","Tomatoes","Capers","Black Olives","Onions","Olive Oil","Vinegar"]},
+      {name:"Baba Ganoush",mealCats:["Snacks"],ingredients:["Aubergine","Tahini","Garlic","Lemon","Olive Oil","Smoked Paprika","Parsley"]},
+      {name:"Dolma",mealCats:["Snacks"],ingredients:["White Rice","Parsley","Mint","Lemon","Olive Oil","Onions"]},
+      {name:"Spanakopita Bites",mealCats:["Snacks"],ingredients:["Spinach","Feta Cheese","Eggs","Olive Oil","Onions"]},
+      {name:"Mediterranean Platter",mealCats:["Snacks"],ingredients:["Hummus","Pita Bread","Cucumber","Tomatoes","Black Olives","Feta Cheese"]},
+      {name:"Lemon Lentil Soup",mealCats:["Snacks"],ingredients:["Lentils","Lemon","Garlic","Cumin Powder","Olive Oil","Parsley"]},
+      {name:"Grilled Fish with Herbs",mealCats:["Dinner"],ingredients:["Salmon","Lemon","Olive Oil","Garlic","Parsley","Capers"]},
+      {name:"Moussaka Style Bake",mealCats:["Dinner"],ingredients:["Aubergine","Lentils","Tomatoes","Onions","Garlic","Cinnamon","Olive Oil"]},
+      {name:"Stuffed Peppers",mealCats:["Dinner"],ingredients:["Capsicum","White Rice","Tomatoes","Onions","Parsley","Olive Oil","Feta Cheese"]},
+      {name:"Chicken Souvlaki",mealCats:["Dinner"],ingredients:["Chicken Breast","Lemon","Garlic","Olive Oil","Oregano","Yogurt","Pita Bread"]},
+      {name:"Lamb Stew Mediterranean",mealCats:["Dinner"],ingredients:["Mutton","Tomatoes","Onions","Garlic","Cinnamon","Olive Oil","Rosemary"]},
+      {name:"Pasta with Feta",mealCats:["Dinner"],ingredients:["Pasta","Feta Cheese","Tomatoes","Black Olives","Garlic","Olive Oil","Basil"]},
+      {name:"Grilled Aubergine Stack",mealCats:["Dinner"],ingredients:["Aubergine","Tomatoes","Feta Cheese","Basil","Olive Oil","Garlic"]},
+      {name:"Chickpea Tagine",mealCats:["Dinner"],ingredients:["Chickpeas","Tomatoes","Carrots","Zucchini","Couscous","Cumin Powder","Smoked Paprika","Olive Oil"]},
+      {name:"Baked Salmon Mediterranean",mealCats:["Dinner"],ingredients:["Salmon","Tomatoes","Black Olives","Capers","Garlic","Lemon","Olive Oil"]},
+      {name:"Couscous with Roasted Veg",mealCats:["Dinner"],ingredients:["Couscous","Zucchini","Aubergine","Capsicum","Onions","Olive Oil","Lemon","Parsley"]}
+    ]
+  },
+  "mexican": {
+    label: "Mexican", emoji: "🌮",
+    desc: "Tacos · Burritos · Guacamole",
+    items: ["Avocado", "Black Beans", "Capsicum", "Cheddar", "Chicken Breast", "Chilli Sauce", "Chipotle", "Chorizo", "Coriander", "Corn", "Corn Tortillas", "Cumin Powder", "Cumin Seeds", "Eggs", "Frozen Corn", "Garlic", "Green Chilli", "Hot Sauce", "Jalape\u00f1os", "Kidney Beans", "Limes", "Maize Flour", "Onions", "Oregano", "Pumpkin Seeds", "Red Chilli Powder", "Salsa", "Salt", "Smoked Paprika", "Sour Cream", "Tomatoes", "Tortilla Wraps", "White Rice"],
+    dishes: [
+      {name:"Huevos Rancheros",mealCats:["Breakfast"],ingredients:["Eggs","Corn Tortillas","Tomatoes","Onions","Garlic","Cumin Seeds","Coriander"]},
+      {name:"Breakfast Burrito",mealCats:["Breakfast"],ingredients:["Tortilla Wraps","Eggs","Black Beans","Cheddar","Salsa","Avocado"]},
+      {name:"Mexican Scrambled Eggs",mealCats:["Breakfast"],ingredients:["Eggs","Jalapeños","Onions","Tomatoes","Coriander","Cumin Seeds"]},
+      {name:"Avocado Toast Mexican",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Lime","Jalapeños","Coriander","Cumin Seeds"]},
+      {name:"Black Bean Breakfast Bowl",mealCats:["Breakfast"],ingredients:["Black Beans","Eggs","Tomatoes","Coriander","Lime","Corn Tortillas"]},
+      {name:"Corn Tortilla Quesadilla",mealCats:["Breakfast"],ingredients:["Corn Tortillas","Eggs","Cheddar","Onions","Capsicum"]},
+      {name:"Chilaquiles",mealCats:["Breakfast"],ingredients:["Corn Tortillas","Tomatoes","Garlic","Onions","Eggs","Coriander","Sour Cream"]},
+      {name:"Mexican Oatmeal",mealCats:["Breakfast"],ingredients:["Oats","Cinnamon","Honey","Almonds","Bananas"]},
+      {name:"Rice and Bean Bowl",mealCats:["Breakfast"],ingredients:["White Rice","Black Beans","Salsa","Coriander","Lime"]},
+      {name:"Tamale Bowl",mealCats:["Breakfast"],ingredients:["Maize Flour","Black Beans","Chilli Sauce","Coriander","Onions"]},
+      {name:"Chicken Tacos",mealCats:["Lunch"],ingredients:["Corn Tortillas","Chicken Breast","Onions","Coriander","Lime","Cumin Seeds","Smoked Paprika"]},
+      {name:"Black Bean Burrito",mealCats:["Lunch"],ingredients:["Tortilla Wraps","Black Beans","White Rice","Cheddar","Sour Cream","Salsa","Coriander"]},
+      {name:"Guacamole and Tortilla Bowl",mealCats:["Lunch"],ingredients:["Avocado","Tomatoes","Onions","Coriander","Lime","Corn Tortillas","Jalapeños"]},
+      {name:"Mexican Rice Bowl",mealCats:["Lunch"],ingredients:["White Rice","Black Beans","Corn","Tomatoes","Coriander","Lime","Sour Cream"]},
+      {name:"Chicken Fajitas",mealCats:["Lunch"],ingredients:["Chicken Breast","Capsicum","Onions","Cumin Seeds","Smoked Paprika","Lime","Tortilla Wraps"]},
+      {name:"Vegetarian Quesadillas",mealCats:["Lunch"],ingredients:["Tortilla Wraps","Black Beans","Cheddar","Capsicum","Onions","Salsa"]},
+      {name:"Taco Salad",mealCats:["Lunch"],ingredients:["Black Beans","Corn","Tomatoes","Lettuce","Cheddar","Sour Cream","Salsa","Lime"]},
+      {name:"Bean and Cheese Burrito",mealCats:["Lunch"],ingredients:["Tortilla Wraps","Kidney Beans","Cheddar","White Rice","Chipotle","Sour Cream"]},
+      {name:"Enchilada Bowl",mealCats:["Lunch"],ingredients:["Corn Tortillas","Chicken Breast","Tomatoes","Onions","Chilli Sauce","Cheddar","Sour Cream"]},
+      {name:"Chipotle Chicken Bowl",mealCats:["Lunch"],ingredients:["White Rice","Chicken Breast","Black Beans","Corn","Chipotle","Sour Cream","Coriander"]},
+      {name:"Guacamole",mealCats:["Snacks"],ingredients:["Avocado","Tomatoes","Onions","Coriander","Lime","Jalapeños"]},
+      {name:"Nachos with Salsa",mealCats:["Snacks"],ingredients:["Corn Tortillas","Cheddar","Salsa","Jalapeños","Sour Cream"]},
+      {name:"Black Bean Dip",mealCats:["Snacks"],ingredients:["Black Beans","Lime","Cumin Seeds","Garlic","Coriander","Chilli Sauce"]},
+      {name:"Corn Salsa",mealCats:["Snacks"],ingredients:["Corn","Tomatoes","Onions","Coriander","Lime","Jalapeños"]},
+      {name:"Mini Quesadillas",mealCats:["Snacks"],ingredients:["Corn Tortillas","Cheddar","Black Beans","Salsa"]},
+      {name:"Spiced Chickpeas",mealCats:["Snacks"],ingredients:["Chickpeas","Cumin Seeds","Smoked Paprika","Chipotle","Lime"]},
+      {name:"Pico de Gallo",mealCats:["Snacks"],ingredients:["Tomatoes","Onions","Coriander","Lime","Jalapeños","Garlic"]},
+      {name:"Elote Corn",mealCats:["Snacks"],ingredients:["Corn","Sour Cream","Cheddar","Lime","Smoked Paprika","Coriander"]},
+      {name:"Avocado Lime Dip",mealCats:["Snacks"],ingredients:["Avocado","Sour Cream","Lime","Garlic","Coriander"]},
+      {name:"Bean Stuffed Peppers",mealCats:["Snacks"],ingredients:["Capsicum","Black Beans","White Rice","Cheddar","Salsa"]},
+      {name:"Chicken Enchiladas",mealCats:["Dinner"],ingredients:["Corn Tortillas","Chicken Breast","Tomatoes","Onions","Cheddar","Chilli Sauce","Sour Cream","Coriander"]},
+      {name:"Beef Style Chilli",mealCats:["Dinner"],ingredients:["Mutton","Black Beans","Tomatoes","Onions","Garlic","Chipotle","Cumin Seeds","Smoked Paprika"]},
+      {name:"Chicken Tinga",mealCats:["Dinner"],ingredients:["Chicken Breast","Tomatoes","Onions","Garlic","Chipotle","Cumin Seeds","Smoked Paprika"]},
+      {name:"Black Bean Tacos",mealCats:["Dinner"],ingredients:["Corn Tortillas","Black Beans","Avocado","Tomatoes","Coriander","Lime","Sour Cream"]},
+      {name:"Chicken Burrito Bowl",mealCats:["Dinner"],ingredients:["White Rice","Chicken Breast","Black Beans","Corn","Salsa","Sour Cream","Cheddar","Coriander"]},
+      {name:"Stuffed Peppers Mexican",mealCats:["Dinner"],ingredients:["Capsicum","White Rice","Black Beans","Tomatoes","Onions","Cheddar","Cumin Seeds","Coriander"]},
+      {name:"Veggie Fajitas",mealCats:["Dinner"],ingredients:["Capsicum","Onions","Black Beans","Corn","Cumin Seeds","Smoked Paprika","Lime","Tortilla Wraps"]},
+      {name:"Prawn Tacos",mealCats:["Dinner"],ingredients:["Corn Tortillas","Prawns","Avocado","Lime","Coriander","Jalapeños","Cumin Seeds"]},
+      {name:"Chicken Quesadilla",mealCats:["Dinner"],ingredients:["Tortilla Wraps","Chicken Breast","Cheddar","Capsicum","Onions","Salsa","Sour Cream"]},
+      {name:"Mexican Vegetable Soup",mealCats:["Dinner"],ingredients:["Tomatoes","Black Beans","Corn","Onions","Garlic","Cumin Seeds","Chipotle","Coriander"]}
+    ]
+  },
+  "west_asian": {
+    label: "West Asian", emoji: "🌙",
+    desc: "Shawarma · Mezze · Kebab",
+    items: ["All Spice", "Almonds", "Apricots", "Arabic Bread", "Aubergine", "Baharat", "Black Olives", "Brinjal", "Bulgur Wheat", "Cardamom", "Chicken Breast", "Chickpeas", "Cinnamon", "Cloves", "Coriander", "Coriander Powder", "Couscous", "Cucumber", "Cumin Powder", "Dates", "Feta Cheese", "Figs", "Freekeh", "Fried Onions", "Garlic", "Harissa", "Hazelnut Dukah", "Hummus", "Lemons", "Lentils", "Mint", "Mixed Nuts", "Mutton", "Olive Oil", "Onions", "Parsley", "Pine Nuts", "Pistachios", "Pita Bread", "Pomegranate", "Pomegranate Molasses", "Preserved Lemon", "Raisins", "Rose Water", "Saffron", "Salt", "Sesame Seeds", "Sumac", "Tahini", "Tomatoes", "Walnuts", "Watermelon", "Yogurt", "Zatar"],
+    dishes: [
+      {name:"Labneh Toast",mealCats:["Breakfast"],ingredients:["Pita Bread","Yogurt","Olive Oil","Zatar","Mint"]},
+      {name:"Ful Medames",mealCats:["Breakfast"],ingredients:["Lentils","Garlic","Lemon","Olive Oil","Cumin Powder","Parsley"]},
+      {name:"Shakshuka West Asian",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Onions","Garlic","Cumin Powder","Smoked Paprika","Harissa","Olive Oil"]},
+      {name:"Pita with Zatar",mealCats:["Breakfast","Snacks"],ingredients:["Pita Bread","Zatar","Olive Oil","Sesame Seeds"]},
+      {name:"Lebanese Omelette",mealCats:["Breakfast"],ingredients:["Eggs","Onions","Parsley","Tomatoes","Olive Oil","Sumac"]},
+      {name:"Hummus Breakfast Bowl",mealCats:["Breakfast"],ingredients:["Chickpeas","Tahini","Lemon","Garlic","Eggs","Olive Oil","Paprika"]},
+      {name:"Chickpea Scramble",mealCats:["Breakfast"],ingredients:["Chickpeas","Eggs","Onions","Tomatoes","Cumin Powder","Olive Oil","Parsley"]},
+      {name:"Freekeh Porridge",mealCats:["Breakfast"],ingredients:["Freekeh","Milk","Honey","Almonds","Rose Water"]},
+      {name:"Date and Nut Oats",mealCats:["Breakfast"],ingredients:["Oats","Dates","Almonds","Honey","Milk"]},
+      {name:"Fattoush",mealCats:["Breakfast","Snacks"],ingredients:["Pita Bread","Tomatoes","Cucumber","Parsley","Mint","Sumac","Lemon","Olive Oil"]},
+      {name:"Tabbouleh",mealCats:["Lunch"],ingredients:["Bulgur Wheat","Parsley","Mint","Tomatoes","Lemon","Olive Oil","Onions"]},
+      {name:"Falafel Wrap",mealCats:["Lunch"],ingredients:["Pita Bread","Chickpeas","Parsley","Cumin Powder","Garlic","Tahini","Tomatoes","Cucumber"]},
+      {name:"Hummus Bowl",mealCats:["Lunch"],ingredients:["Chickpeas","Tahini","Lemon","Garlic","Olive Oil","Pita Bread","Sumac","Pine Nuts"]},
+      {name:"Freekeh Salad",mealCats:["Lunch"],ingredients:["Freekeh","Parsley","Mint","Pomegranate","Lemon","Olive Oil","Onions"]},
+      {name:"Lentil Soup West Asian",mealCats:["Lunch"],ingredients:["Lentils","Onions","Garlic","Cumin Powder","Lemon","Olive Oil","Parsley","Sumac"]},
+      {name:"Bulgur Pilaf",mealCats:["Lunch"],ingredients:["Bulgur Wheat","Onions","Tomatoes","Chicken Breast","Baharat","Olive Oil","Pine Nuts"]},
+      {name:"Couscous with Chicken",mealCats:["Lunch"],ingredients:["Couscous","Chicken Breast","Onions","Carrots","Tomatoes","Baharat","Olive Oil","Almonds"]},
+      {name:"Stuffed Vine Leaves",mealCats:["Lunch"],ingredients:["White Rice","Parsley","Mint","Lemon","Olive Oil","Onions","Tomatoes"]},
+      {name:"Mujaddara",mealCats:["Lunch"],ingredients:["Lentils","White Rice","Onions","Cumin Powder","Olive Oil","Yogurt","Parsley"]},
+      {name:"Fattoush Salad",mealCats:["Lunch"],ingredients:["Pita Bread","Tomatoes","Cucumber","Parsley","Mint","Sumac","Lemon","Olive Oil"]},
+      {name:"Hummus with Pita",mealCats:["Snacks"],ingredients:["Chickpeas","Tahini","Lemon","Garlic","Olive Oil","Pita Bread","Smoked Paprika"]},
+      {name:"Baba Ganoush",mealCats:["Snacks"],ingredients:["Aubergine","Tahini","Garlic","Lemon","Olive Oil","Smoked Paprika","Parsley"]},
+      {name:"Muhamara",mealCats:["Snacks"],ingredients:["Capsicum","Walnuts","Pomegranate Molasses","Cumin Powder","Garlic","Olive Oil"]},
+      {name:"Zatar Flatbread",mealCats:["Snacks"],ingredients:["Pita Bread","Zatar","Olive Oil","Sesame Seeds"]},
+      {name:"Labneh Dip",mealCats:["Snacks"],ingredients:["Yogurt","Olive Oil","Mint","Garlic","Sumac"]},
+      {name:"Stuffed Dates",mealCats:["Snacks"],ingredients:["Dates","Almonds","Sesame Seeds","Honey","Cinnamon"]},
+      {name:"Chickpea Snack Bowl",mealCats:["Snacks"],ingredients:["Chickpeas","Olive Oil","Sumac","Cumin Powder","Parsley","Lemon"]},
+      {name:"Preserved Lemon Dip",mealCats:["Snacks"],ingredients:["Preserved Lemon","Yogurt","Garlic","Parsley","Olive Oil"]},
+      {name:"Walnuts with Pomegranate",mealCats:["Snacks"],ingredients:["Walnuts","Pomegranate","Honey","Mint","Pomegranate Molasses"]},
+      {name:"Spiced Nuts",mealCats:["Snacks"],ingredients:["Almonds","Walnuts","Cumin Powder","Smoked Paprika","Honey","Olive Oil"]},
+      {name:"Chicken Shawarma",mealCats:["Dinner"],ingredients:["Chicken Breast","Pita Bread","Yogurt","Garlic","Lemon","Cumin Powder","Smoked Paprika","Tahini"]},
+      {name:"Lamb Kofta",mealCats:["Dinner"],ingredients:["Mutton","Onions","Parsley","Cumin Powder","Baharat","Garlic","Olive Oil"]},
+      {name:"Chicken Freekeh",mealCats:["Dinner"],ingredients:["Chicken Breast","Freekeh","Onions","Almonds","Pine Nuts","Baharat","Olive Oil"]},
+      {name:"Baked Chicken with Sumac",mealCats:["Dinner"],ingredients:["Chicken Breast","Sumac","Garlic","Lemon","Olive Oil","Onions","Zatar"]},
+      {name:"Lamb and Chickpea Stew",mealCats:["Dinner"],ingredients:["Mutton","Chickpeas","Tomatoes","Onions","Baharat","Garlic","Olive Oil","Parsley"]},
+      {name:"Harissa Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Harissa","Garlic","Lemon","Olive Oil","Yogurt"]},
+      {name:"Bulgur with Lamb",mealCats:["Dinner"],ingredients:["Bulgur Wheat","Mutton","Onions","Tomatoes","Baharat","Pine Nuts","Olive Oil"]},
+      {name:"Grilled Fish West Asian",mealCats:["Dinner"],ingredients:["Salmon","Preserved Lemon","Garlic","Olive Oil","Parsley","Cumin Powder"]},
+      {name:"Vegetable Couscous",mealCats:["Dinner"],ingredients:["Couscous","Zucchini","Carrots","Tomatoes","Onions","Baharat","Olive Oil","Chickpeas"]},
+      {name:"Mansaf Style Rice",mealCats:["Dinner"],ingredients:["Basmati Rice","Mutton","Yogurt","Onions","Almonds","Pine Nuts","Turmeric Powder","Baharat"]}
+    ]
+  },
+  "french_continental": {
+    label: "French / Continental", emoji: "🥐",
+    desc: "Quiche · Crêpes · Boeuf Bourguignon",
+    items: ["All Spice", "All-Purpose Flour", "Almond Flour", "Almonds", "Anchovies", "Apple Cider Vinegar", "Apples", "Apricots", "Asparagus", "Bacon", "Baking Powder", "Baking Soda", "Bay Leaves", "Beetroot", "Biscuits", "Black Pepper", "Broccoli", "Brown Bread", "Butter", "Capers", "Carrots", "Celery", "Cheddar", "Cheese", "Cherries", "Chicken Breast", "Chives", "Cinnamon", "Cocoa Powder", "Coffee", "Cookies", "Crackers", "Creme Fraiche", "Croissant", "Dark Chocolate", "Dijon Mustard", "Dill", "Dried Cranberry", "Eggs", "Fish Fillet", "Fresh Cream", "Frozen Berries", "Frozen Chicken", "Frozen Fish", "Frozen Peas", "Frozen Peas & Corn", "Garlic", "Gouda", "Grapes", "Gruyere", "Hazelnuts", "Herbal Tea", "Honey", "Hot Chocolate", "Ice Cream", "Kale", "Kiwi", "Lemons", "Lentils", "Lettuce", "Mayonnaise", "Milk", "Mixed Spice", "Mushrooms", "Mustard Sauce", "Mutton", "Nutmeg", "Oats", "Olive Oil", "Onions", "Oranges", "Panko Breadcrumbs", "Parmesan", "Parsley", "Peach", "Pear", "Peas", "Peppercorn", "Pink Peppercorn", "Plum", "Potatoes", "Prunes", "Pumpkin", "Raisins", "Rocket", "Rosemary", "Saffron", "Sage", "Salmon", "Salt", "Self-Raising Flour", "Shallots", "Skimmed Milk", "Sparkling Water", "Strawberries", "Sugar", "Sunflower Oil", "Thyme", "Tomatoes", "Truffle Olive Oil", "Turkey", "Vanilla Extract", "Vinegar", "Walnuts", "White Bread", "White Pepper Powder", "White Wine", "Whole Wheat Bread", "Worcestershire", "Yeast", "Yogurt", "Zucchini"],
+    dishes: [
+      {name:"Crepes",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Eggs","Milk","Butter","Sugar"]},
+      {name:"French Toast",mealCats:["Breakfast"],ingredients:["White Bread","Eggs","Milk","Butter","Sugar","Cinnamon","Vanilla Extract"]},
+      {name:"Omelette Fines Herbes",mealCats:["Breakfast"],ingredients:["Eggs","Butter","Parsley","Chives","Thyme"]},
+      {name:"Croque Monsieur",mealCats:["Breakfast"],ingredients:["White Bread","Bacon","Cheddar","Butter","Dijon Mustard","Milk"]},
+      {name:"Quiche Lorraine",mealCats:["Breakfast","Lunch"],ingredients:["Eggs","Bacon","Fresh Cream","Gruyere","All-Purpose Flour","Butter"]},
+      {name:"Baguette with Butter",mealCats:["Breakfast"],ingredients:["White Bread","Butter","Dijon Mustard"]},
+      {name:"Mushroom Crepes",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Eggs","Milk","Mushrooms","Shallots","Butter","Gruyere"]},
+      {name:"Soft Boiled Eggs with Toast",mealCats:["Breakfast"],ingredients:["Eggs","White Bread","Butter","Salt"]},
+      {name:"Yogurt with Honey",mealCats:["Breakfast"],ingredients:["Yogurt","Honey","Almonds","Strawberries"]},
+      {name:"Granola Bowls",mealCats:["Breakfast"],ingredients:["Oats","Honey","Almonds","Butter","Yogurt","Strawberries"]},
+      {name:"French Onion Soup",mealCats:["Lunch"],ingredients:["Onions","Butter","White Wine","White Bread","Gruyere","Thyme","Garlic"]},
+      {name:"Quiche with Salad",mealCats:["Lunch"],ingredients:["Eggs","Fresh Cream","Gruyere","All-Purpose Flour","Butter","Rocket","Lemon"]},
+      {name:"Nicoise Style Salad",mealCats:["Lunch"],ingredients:["Salmon","Eggs","Potatoes","Tomatoes","Black Olives","Capers","Lemon","Olive Oil"]},
+      {name:"Croque Madame",mealCats:["Lunch"],ingredients:["White Bread","Bacon","Cheddar","Eggs","Butter","Dijon Mustard"]},
+      {name:"Vichyssoise",mealCats:["Lunch"],ingredients:["Potatoes","Onions","Leeks","Fresh Cream","Butter","Thyme"]},
+      {name:"Salmon en Papillote",mealCats:["Lunch"],ingredients:["Salmon","Lemon","Capers","Shallots","White Wine","Butter","Thyme"]},
+      {name:"Ratatouille",mealCats:["Lunch"],ingredients:["Aubergine","Zucchini","Capsicum","Tomatoes","Onions","Garlic","Thyme","Olive Oil"]},
+      {name:"Leek and Gruyere Tart",mealCats:["Lunch"],ingredients:["All-Purpose Flour","Eggs","Fresh Cream","Gruyere","Butter","Shallots","Thyme"]},
+      {name:"Chicken Waldorf Salad",mealCats:["Lunch"],ingredients:["Chicken Breast","Apples","Celery","Walnuts","Yogurt","Lemon","Dijon Mustard"]},
+      {name:"Pasta Gratin",mealCats:["Lunch"],ingredients:["Pasta","Fresh Cream","Gruyere","Butter","Mushrooms","Shallots","Thyme"]},
+      {name:"Cheese Platter",mealCats:["Snacks"],ingredients:["Gruyere","Cheddar","White Bread","Dijon Mustard","Almonds","Dates"]},
+      {name:"Gougeres",mealCats:["Snacks"],ingredients:["All-Purpose Flour","Eggs","Butter","Milk","Gruyere","Thyme"]},
+      {name:"Pate on Toast",mealCats:["Snacks"],ingredients:["White Bread","Chicken Breast","Butter","Shallots","Thyme","Dijon Mustard"]},
+      {name:"Deviled Eggs",mealCats:["Snacks"],ingredients:["Eggs","Dijon Mustard","Fresh Cream","Paprika","Chives"]},
+      {name:"Mushroom Bruschetta",mealCats:["Snacks"],ingredients:["White Bread","Mushrooms","Shallots","Garlic","Butter","Thyme","Parsley"]},
+      {name:"Creme Fraiche Dip",mealCats:["Snacks"],ingredients:["Creme Fraiche","Garlic","Chives","Lemon","Dijon Mustard"]},
+      {name:"French Dressing Salad",mealCats:["Snacks"],ingredients:["Lettuce","Tomatoes","Dijon Mustard","Vinegar","Olive Oil","Shallots"]},
+      {name:"Baguette Canapes",mealCats:["Snacks"],ingredients:["White Bread","Butter","Cheddar","Tomatoes","Parsley"]},
+      {name:"Onion Tart",mealCats:["Snacks"],ingredients:["Onions","Butter","All-Purpose Flour","Eggs","Fresh Cream","Thyme","Gruyere"]},
+      {name:"Rillettes Toast",mealCats:["Snacks"],ingredients:["White Bread","Bacon","Shallots","Butter","Thyme","Dijon Mustard"]},
+      {name:"Coq au Vin",mealCats:["Dinner"],ingredients:["Chicken Breast","Bacon","Mushrooms","Onions","Garlic","White Wine","Thyme","Butter"]},
+      {name:"Beef Bourguignon Style",mealCats:["Dinner"],ingredients:["Mutton","Bacon","Onions","Carrots","Mushrooms","White Wine","Thyme","Garlic","Butter"]},
+      {name:"Salmon with Creme Fraiche",mealCats:["Dinner"],ingredients:["Salmon","Creme Fraiche","Dijon Mustard","Lemon","Capers","Shallots"]},
+      {name:"Chicken with Mushroom Sauce",mealCats:["Dinner"],ingredients:["Chicken Breast","Mushrooms","Fresh Cream","Shallots","White Wine","Butter","Thyme"]},
+      {name:"Gratin Dauphinois",mealCats:["Dinner"],ingredients:["Potatoes","Fresh Cream","Gruyere","Butter","Garlic","Thyme","Nutmeg"]},
+      {name:"Duck Confit Style Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Garlic","Thyme","Rosemary","Butter","Shallots","White Wine"]},
+      {name:"Boeuf Style Stew",mealCats:["Dinner"],ingredients:["Mutton","Carrots","Onions","Celery","Potatoes","Thyme","Garlic","White Wine"]},
+      {name:"Pasta with Cream Sauce",mealCats:["Dinner"],ingredients:["Pasta","Fresh Cream","Garlic","Parmesan","Butter","Thyme","Shallots"]},
+      {name:"Chicken with Dijon",mealCats:["Dinner"],ingredients:["Chicken Breast","Dijon Mustard","Fresh Cream","Shallots","Thyme","Butter","White Wine"]},
+      {name:"Tuna Nicoise",mealCats:["Dinner"],ingredients:["Salmon","Eggs","Potatoes","Tomatoes","Black Olives","Capers","Lemon","Olive Oil","Dijon Mustard"]}
+    ]
+  },
+  "south_east_asian": {
+    label: "South East Asian", emoji: "🌺",
+    desc: "Pad Thai · Thai Curry · Pho",
+    items: ["Agar Agar", "Bananas", "Basil", "Bean Sprouts", "Bitter Gourd", "Bok Choy", "Boneless Basa Cubes", "Cashews", "Chicken Breast", "Chilli Sauce", "Coconut", "Coconut Flakes", "Coconut Grated", "Coconut Milk", "Coconut Oil", "Coconut Water", "Condensed Milk", "Coriander", "Curry Powder", "Fish Fillet", "Fish Sauce", "Frozen Fish", "Frozen Prawns", "Galangal", "Garlic", "Ginger", "Green Chilli", "Instant Noodles", "Jackfruit", "Kaffir Lime Leaves", "Lemongrass", "Limes", "Mango", "Noodles", "Onions", "Oyster Sauce", "Palm Sugar", "Papaya", "Peanut Butter", "Peanuts", "Pineapple", "Prawns", "Rice Flour", "Rice Noodles", "Rice Vinegar", "Salt", "Sesame Oil", "Sesame Seeds", "Shallots", "Shrimp Paste", "Soy Sauce", "Spring Onion", "Spring Roll Wrappers", "Sriracha", "Star Anise", "Sugar", "Tamarind", "Tamarind Paste", "Tempeh", "Thai Green Curry Paste", "Thai Red Curry Paste", "Tofu", "Turmeric Powder", "Vermicelli", "White Rice"],
+    dishes: [
+      {name:"Thai Rice Porridge",mealCats:["Breakfast"],ingredients:["White Rice","Ginger","Garlic","Spring Onion","Fish Sauce","Sesame Oil"]},
+      {name:"Coconut Pancakes",mealCats:["Breakfast"],ingredients:["Rice Flour","Coconut Milk","Eggs","Sugar","Sesame Seeds"]},
+      {name:"Vietnamese Egg Crepe",mealCats:["Breakfast"],ingredients:["Rice Flour","Eggs","Coconut Milk","Spring Onion","Bean Sprouts"]},
+      {name:"Lemongrass Omelette",mealCats:["Breakfast"],ingredients:["Eggs","Lemongrass","Fish Sauce","Spring Onion","Sesame Oil"]},
+      {name:"Coconut Oats",mealCats:["Breakfast"],ingredients:["Oats","Coconut Milk","Bananas","Honey","Sesame Seeds"]},
+      {name:"Rice with Soft Egg",mealCats:["Breakfast"],ingredients:["White Rice","Eggs","Soy Sauce","Sesame Oil","Spring Onion","Garlic"]},
+      {name:"Tofu Scramble Thai",mealCats:["Breakfast"],ingredients:["Tofu","Garlic","Soy Sauce","Sesame Oil","Spring Onion","Bean Sprouts"]},
+      {name:"Pandan Coconut Rice",mealCats:["Breakfast"],ingredients:["White Rice","Coconut Milk","Palm Sugar","Sesame Seeds"]},
+      {name:"Spring Onion Omelette",mealCats:["Breakfast"],ingredients:["Eggs","Spring Onion","Fish Sauce","Sesame Oil","Garlic"]},
+      {name:"Mango Sticky Rice Breakfast",mealCats:["Breakfast"],ingredients:["White Rice","Coconut Milk","Mango","Palm Sugar","Sesame Seeds"]},
+      {name:"Pad Thai",mealCats:["Lunch"],ingredients:["Rice Noodles","Eggs","Tofu","Fish Sauce","Limes","Peanuts","Bean Sprouts","Spring Onion"]},
+      {name:"Thai Green Curry",mealCats:["Lunch"],ingredients:["Chicken Breast","Thai Green Curry Paste","Coconut Milk","Bok Choy","Limes","Fish Sauce","Basil"]},
+      {name:"Thai Red Curry",mealCats:["Lunch"],ingredients:["Chicken Breast","Thai Red Curry Paste","Coconut Milk","Capsicum","Fish Sauce","Basil","Limes"]},
+      {name:"Vietnamese Noodle Soup",mealCats:["Lunch"],ingredients:["Rice Noodles","Chicken Breast","Ginger","Lemongrass","Fish Sauce","Spring Onion","Bean Sprouts","Basil"]},
+      {name:"Pad See Ew",mealCats:["Lunch"],ingredients:["Rice Noodles","Chicken Breast","Bok Choy","Eggs","Soy Sauce","Garlic","Sesame Oil"]},
+      {name:"Tom Yum Soup",mealCats:["Lunch"],ingredients:["Prawns","Lemongrass","Kaffir Lime Leaves","Galangal","Mushrooms","Fish Sauce","Limes","Green Chilli"]},
+      {name:"Coconut Tofu Curry",mealCats:["Lunch"],ingredients:["Tofu","Coconut Milk","Thai Red Curry Paste","Bok Choy","Fish Sauce","Limes","Basil"]},
+      {name:"Larb Salad",mealCats:["Lunch"],ingredients:["Chicken Breast","Lemongrass","Limes","Fish Sauce","Spring Onion","Coriander","Garlic"]},
+      {name:"Som Tum Style Salad",mealCats:["Lunch"],ingredients:["Carrots","Cucumber","Bean Sprouts","Limes","Fish Sauce","Garlic","Green Chilli","Peanuts"]},
+      {name:"Rice with Thai Basil Chicken",mealCats:["Lunch"],ingredients:["White Rice","Chicken Breast","Basil","Garlic","Fish Sauce","Soy Sauce","Eggs","Green Chilli"]},
+      {name:"Fresh Spring Rolls",mealCats:["Snacks"],ingredients:["Rice Noodles","Carrots","Cucumber","Coriander","Basil","Peanuts","Limes","Bean Sprouts"]},
+      {name:"Satay with Peanut Sauce",mealCats:["Snacks"],ingredients:["Chicken Breast","Peanut Butter","Coconut Milk","Soy Sauce","Limes","Garlic","Ginger"]},
+      {name:"Edamame with Fish Sauce",mealCats:["Snacks"],ingredients:["Edamame","Fish Sauce","Limes","Garlic","Green Chilli"]},
+      {name:"Thai Peanut Salad",mealCats:["Snacks"],ingredients:["Peanuts","Cucumber","Spring Onion","Limes","Fish Sauce","Green Chilli","Coriander"]},
+      {name:"Coconut Banana Fritters",mealCats:["Snacks"],ingredients:["Bananas","Rice Flour","Coconut Milk","Palm Sugar","Sesame Seeds","Coconut Oil"]},
+      {name:"Lemongrass Tea",mealCats:["Snacks"],ingredients:["Lemongrass","Honey","Limes","Ginger"]},
+      {name:"Wonton Soup",mealCats:["Snacks"],ingredients:["Wonton Wrappers","Garlic","Ginger","Spring Onion","Fish Sauce","Sesame Oil"]},
+      {name:"Papaya Salad",mealCats:["Snacks"],ingredients:["Papaya","Limes","Fish Sauce","Garlic","Green Chilli","Peanuts","Coriander"]},
+      {name:"Thai Corn Fritters",mealCats:["Snacks"],ingredients:["Corn","Rice Flour","Spring Onion","Green Chilli","Coriander","Coconut Oil"]},
+      {name:"Cucumber Lemongrass Salad",mealCats:["Snacks"],ingredients:["Cucumber","Lemongrass","Limes","Fish Sauce","Green Chilli","Coriander","Garlic"]},
+      {name:"Thai Prawn Curry",mealCats:["Dinner"],ingredients:["Prawns","Thai Red Curry Paste","Coconut Milk","Bok Choy","Fish Sauce","Basil","Limes"]},
+      {name:"Pad Thai Dinner",mealCats:["Dinner"],ingredients:["Rice Noodles","Prawns","Eggs","Fish Sauce","Limes","Peanuts","Bean Sprouts","Spring Onion"]},
+      {name:"Massaman Style Curry",mealCats:["Dinner"],ingredients:["Chicken Breast","Coconut Milk","Potatoes","Onions","Peanuts","Lemongrass","Palm Sugar","Fish Sauce"]},
+      {name:"Green Curry with Tofu",mealCats:["Dinner"],ingredients:["Tofu","Thai Green Curry Paste","Coconut Milk","Bok Choy","Basil","Fish Sauce","Limes"]},
+      {name:"Tom Kha Soup",mealCats:["Dinner"],ingredients:["Chicken Breast","Coconut Milk","Lemongrass","Galangal","Kaffir Lime Leaves","Mushrooms","Fish Sauce","Limes"]},
+      {name:"Nasi Goreng",mealCats:["Dinner"],ingredients:["White Rice","Eggs","Chicken Breast","Soy Sauce","Fish Sauce","Garlic","Spring Onion","Bean Sprouts"]},
+      {name:"Mee Goreng",mealCats:["Dinner"],ingredients:["Rice Noodles","Eggs","Bean Sprouts","Garlic","Soy Sauce","Fish Sauce","Shrimp Paste","Spring Onion"]},
+      {name:"Lemongrass Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Lemongrass","Garlic","Fish Sauce","Palm Sugar","Limes","Coriander"]},
+      {name:"Coconut Laksa",mealCats:["Dinner"],ingredients:["Rice Noodles","Chicken Breast","Coconut Milk","Lemongrass","Kaffir Lime Leaves","Bean Sprouts","Bok Choy","Thai Red Curry Paste"]},
+      {name:"Steamed Fish Thai",mealCats:["Dinner"],ingredients:["Salmon","Lemongrass","Kaffir Lime Leaves","Ginger","Fish Sauce","Limes","Coriander","Garlic"]}
+    ]
+  },
+  "vegan": {
+    label: "Vegan", emoji: "🌱",
+    desc: "Plant-Based · Bowls · Smoothies",
+    items: ["Agar Agar", "Almond Flour", "Almonds", "Apple Cider Vinegar", "Apples", "Avocado", "Bananas", "Black Beans", "Broccoli", "Brown Rice", "Carrots", "Cashews", "Chia Seeds", "Chickpeas", "Coconut Flakes", "Coconut Milk", "Dark Chocolate", "Edamame", "Flax Seeds", "Frozen Berries", "Garlic", "Granola Bar", "Herbal Tea", "Honey", "Jackfruit", "Kale", "Kombucha", "Lemons", "Lentils", "Limes", "Maple Syrup", "Millet", "Mushrooms", "Nutritional Yeast", "Oat Flour", "Oats", "Onions", "Oranges", "Peanut Butter", "Peanuts", "Protein Bar", "Protein Shake", "Pumpkin Seeds", "Quinoa", "Rice Cakes", "Salt", "Sesame Seeds", "Soy Sauce", "Spinach", "Strawberries", "Sunflower Seeds", "Sweet Potato", "Tempeh", "Tofu", "Tomatoes"],
+    dishes: [
+      {name:"Smoothie Bowl",mealCats:["Breakfast"],ingredients:["Frozen Berries","Bananas","Coconut Milk","Oats","Chia Seeds","Almonds","Maple Syrup"]},
+      {name:"Overnight Oats",mealCats:["Breakfast"],ingredients:["Oats","Coconut Milk","Chia Seeds","Berries","Maple Syrup","Almonds"]},
+      {name:"Avocado Toast Vegan",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Lemon","Tomatoes","Nutritional Yeast","Pepper Flakes"]},
+      {name:"Tofu Scramble",mealCats:["Breakfast"],ingredients:["Tofu","Nutritional Yeast","Turmeric Powder","Spinach","Mushrooms","Garlic","Soy Sauce"]},
+      {name:"Banana Oat Pancakes",mealCats:["Breakfast"],ingredients:["Oats","Bananas","Chia Seeds","Maple Syrup","Coconut Oil","Cinnamon"]},
+      {name:"Chia Pudding",mealCats:["Breakfast"],ingredients:["Chia Seeds","Coconut Milk","Maple Syrup","Berries","Almonds","Vanilla Extract"]},
+      {name:"Tempeh Bacon Toast",mealCats:["Breakfast"],ingredients:["Tempeh","Soy Sauce","Maple Syrup","White Bread","Avocado","Tomatoes"]},
+      {name:"Green Smoothie",mealCats:["Breakfast"],ingredients:["Kale","Bananas","Coconut Milk","Chia Seeds","Honey","Lemon"]},
+      {name:"Granola Bowl",mealCats:["Breakfast"],ingredients:["Oats","Almonds","Cashews","Maple Syrup","Coconut Oil","Coconut Flakes","Berries"]},
+      {name:"Sweet Potato Toast",mealCats:["Breakfast"],ingredients:["Sweet Potato","Peanut Butter","Bananas","Maple Syrup","Chia Seeds"]},
+      {name:"Buddha Bowl",mealCats:["Lunch"],ingredients:["Quinoa","Chickpeas","Avocado","Sweet Potato","Spinach","Tahini","Lemon","Sesame Seeds"]},
+      {name:"Lentil Soup Vegan",mealCats:["Lunch"],ingredients:["Lentils","Onions","Garlic","Tomatoes","Cumin Powder","Smoked Paprika","Lemon","Olive Oil","Spinach"]},
+      {name:"Chickpea Salad",mealCats:["Lunch"],ingredients:["Chickpeas","Cucumber","Tomatoes","Onions","Parsley","Lemon","Olive Oil","Cumin Powder"]},
+      {name:"Tempeh Stir Fry",mealCats:["Lunch"],ingredients:["Tempeh","Broccoli","Mushrooms","Soy Sauce","Garlic","Sesame Oil","Spring Onion","Sesame Seeds"]},
+      {name:"Jackfruit Tacos",mealCats:["Lunch"],ingredients:["Jackfruit","Corn Tortillas","Cumin Seeds","Smoked Paprika","Avocado","Coriander","Limes"]},
+      {name:"Quinoa Salad",mealCats:["Lunch"],ingredients:["Quinoa","Spinach","Tomatoes","Cucumber","Pumpkin Seeds","Lemon","Olive Oil","Mint"]},
+      {name:"Black Bean Bowl",mealCats:["Lunch"],ingredients:["Black Beans","White Rice","Avocado","Corn","Tomatoes","Coriander","Limes","Sour Cream"]},
+      {name:"Vegan Poke Bowl",mealCats:["Lunch"],ingredients:["White Rice","Tofu","Edamame","Avocado","Cucumber","Soy Sauce","Sesame Oil","Sesame Seeds"]},
+      {name:"Mushroom Quinoa Soup",mealCats:["Lunch"],ingredients:["Mushrooms","Quinoa","Onions","Garlic","Carrots","Thyme","Olive Oil","Spinach"]},
+      {name:"Lentil and Spinach Curry",mealCats:["Lunch"],ingredients:["Lentils","Spinach","Onions","Tomatoes","Garlic","Ginger","Cumin Powder","Turmeric Powder","Coconut Milk"]},
+      {name:"Roasted Chickpeas",mealCats:["Snacks"],ingredients:["Chickpeas","Smoked Paprika","Cumin Powder","Olive Oil","Lemon"]},
+      {name:"Energy Balls",mealCats:["Snacks"],ingredients:["Oats","Peanut Butter","Maple Syrup","Chia Seeds","Chocolate Chips","Almonds"]},
+      {name:"Guacamole Vegan",mealCats:["Snacks"],ingredients:["Avocado","Tomatoes","Onions","Coriander","Limes","Jalapeños"]},
+      {name:"Hummus Vegan",mealCats:["Snacks"],ingredients:["Chickpeas","Tahini","Lemon","Garlic","Olive Oil","Smoked Paprika"]},
+      {name:"Kale Chips",mealCats:["Snacks"],ingredients:["Kale","Olive Oil","Nutritional Yeast","Lemon","Garlic"]},
+      {name:"Edamame Snack",mealCats:["Snacks"],ingredients:["Edamame","Sesame Oil","Soy Sauce","Sesame Seeds"]},
+      {name:"Peanut Butter Banana Bites",mealCats:["Snacks"],ingredients:["Bananas","Peanut Butter","Chia Seeds","Oats","Maple Syrup"]},
+      {name:"Trail Mix Bowl",mealCats:["Snacks"],ingredients:["Almonds","Cashews","Pumpkin Seeds","Chia Seeds","Dried Cranberry","Dark Chocolate"]},
+      {name:"Sweet Potato Hummus",mealCats:["Snacks"],ingredients:["Sweet Potato","Tahini","Lemon","Garlic","Smoked Paprika","Olive Oil"]},
+      {name:"Spiced Nuts",mealCats:["Snacks"],ingredients:["Almonds","Cashews","Cumin Powder","Smoked Paprika","Maple Syrup","Olive Oil"]},
+      {name:"Tofu and Broccoli Stir Fry",mealCats:["Dinner"],ingredients:["Tofu","Broccoli","Mushrooms","Soy Sauce","Garlic","Sesame Oil","Ginger","Spring Onion"]},
+      {name:"Jackfruit Curry",mealCats:["Dinner"],ingredients:["Jackfruit","Coconut Milk","Onions","Tomatoes","Garlic","Ginger","Garam Masala","Turmeric Powder"]},
+      {name:"Black Bean Enchiladas",mealCats:["Dinner"],ingredients:["Black Beans","Corn Tortillas","Tomatoes","Onions","Garlic","Cumin Seeds","Avocado","Coriander"]},
+      {name:"Lentil Bolognese",mealCats:["Dinner"],ingredients:["Lentils","Pasta","Tomatoes","Onions","Garlic","Carrot","Basil","Nutritional Yeast","Olive Oil"]},
+      {name:"Chickpea Tikka Masala",mealCats:["Dinner"],ingredients:["Chickpeas","Coconut Milk","Tomatoes","Onions","Garlic","Ginger","Garam Masala","Coriander"]},
+      {name:"Tempeh Buddha Bowl",mealCats:["Dinner"],ingredients:["Tempeh","Quinoa","Kale","Sweet Potato","Tahini","Lemon","Sesame Seeds","Garlic"]},
+      {name:"Mushroom Stroganoff",mealCats:["Dinner"],ingredients:["Mushrooms","Pasta","Onions","Garlic","Soy Sauce","Nutritional Yeast","Thyme","Coconut Milk"]},
+      {name:"Vegan Thai Curry",mealCats:["Dinner"],ingredients:["Tofu","Thai Green Curry Paste","Coconut Milk","Bok Choy","Edamame","Basil","Soy Sauce","Limes"]},
+      {name:"Sweet Potato and Lentil Stew",mealCats:["Dinner"],ingredients:["Sweet Potato","Lentils","Onions","Tomatoes","Garlic","Coconut Milk","Cumin Powder","Smoked Paprika"]},
+      {name:"Cauliflower Steak",mealCats:["Dinner"],ingredients:["Cauliflower","Olive Oil","Garlic","Smoked Paprika","Lemon","Nutritional Yeast","Parsley"]}
+    ]
+  },
+  "american": {
+    label: "American", emoji: "🇺🇸",
+    desc: "BBQ · Burgers · Mac and Cheese",
+    items: ["All Spice", "All-Purpose Flour", "Apple Cider Vinegar", "Apples", "Avocado", "Bacon", "Baking Powder", "Baking Soda", "Barbecue Sauce", "Biscuits", "Black Beans", "Black Pepper", "Brown Bread", "Brown Rice", "Burger Buns", "Butter", "Buttermilk", "Capsicum", "Carrots", "Celery", "Cheddar", "Cheese", "Cherries", "Chia Seeds", "Chicken Breast", "Chilli Sauce", "Chips", "Chives", "Chorizo", "Cinnamon", "Cocoa Powder", "Coffee", "Cookies", "Corn", "Corn Flour", "Crackers", "Cream Cheese", "Dark Chocolate", "Dried Cranberry", "Dried Garlic", "Eggs", "Flax Seeds", "Frozen Berries", "Frozen Chicken", "Frozen Corn", "Frozen Peas & Corn", "Frozen Pizza", "Garlic", "Granola Bar", "Honey", "Hot Chocolate", "Hot Sauce", "Ice Cream", "Jalape\u00f1os", "Juice", "Kale", "Kidney Beans", "Kiwi", "Kombucha", "Lactose Free Milk", "Lettuce", "Maize Flour", "Maple Syrup", "Mayonnaise", "Milk", "Mixed Nuts", "Mixed Spice", "Mushrooms", "Mustard Sauce", "Nutmeg", "Oat Flour", "Oats", "Onions", "Pancake Mix", "Paprika", "Peach", "Peanut Butter", "Peanuts", "Pear", "Pecans", "Pepper Flakes", "Pickle", "Pineapple", "Popcorn", "Potatoes", "Pretzels", "Protein Bar", "Protein Shake", "Prunes", "Pumpkin Seeds", "Quinoa", "Ranch Dressing", "Salmon", "Salsa", "Salt", "Self-Raising Flour", "Skimmed Milk", "Smoked Paprika", "Soda", "Sour Cream", "Sriracha", "Strawberries", "Sugar", "Sunflower Oil", "Sunflower Seeds", "Sweet Potato", "Tea", "Thyme", "Tomato Ketchup", "Tomato Paste", "Tomatoes", "Turkey", "Vanilla Extract", "Vinegar", "Walnuts", "White Bread", "Whole Wheat Bread", "Worcestershire", "Yeast"],
+    dishes: [
+      {name:"Pancakes",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Eggs","Milk","Butter","Sugar","Baking Powder","Maple Syrup"]},
+      {name:"Bacon and Eggs",mealCats:["Breakfast"],ingredients:["Bacon","Eggs","Butter","White Bread","Black Pepper"]},
+      {name:"French Toast American",mealCats:["Breakfast"],ingredients:["White Bread","Eggs","Milk","Butter","Cinnamon","Maple Syrup","Sugar"]},
+      {name:"Breakfast Scramble",mealCats:["Breakfast"],ingredients:["Eggs","Bacon","Potatoes","Onions","Capsicum","Cheddar","Butter"]},
+      {name:"Waffle Stack",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Eggs","Milk","Butter","Sugar","Baking Powder","Maple Syrup","Strawberries"]},
+      {name:"Oatmeal with Maple",mealCats:["Breakfast"],ingredients:["Oats","Milk","Maple Syrup","Almonds","Bananas","Cinnamon","Butter"]},
+      {name:"Bagel with Cream Cheese",mealCats:["Breakfast"],ingredients:["White Bread","Cream Cheese","Salmon","Capers","Lemon","Spring Onion"]},
+      {name:"Breakfast Burrito",mealCats:["Breakfast"],ingredients:["Tortilla Wraps","Eggs","Bacon","Cheddar","Salsa","Sour Cream","Avocado"]},
+      {name:"Avocado Toast American",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Eggs","Lemon","Pepper Flakes","Black Pepper"]},
+      {name:"Banana Bread",mealCats:["Breakfast","Snacks"],ingredients:["Bananas","All-Purpose Flour","Eggs","Butter","Sugar","Baking Soda","Vanilla Extract","Walnuts"]},
+      {name:"BLT Sandwich",mealCats:["Lunch"],ingredients:["White Bread","Bacon","Lettuce","Tomatoes","Mayonnaise","Black Pepper"]},
+      {name:"Club Sandwich",mealCats:["Lunch"],ingredients:["White Bread","Chicken Breast","Bacon","Lettuce","Tomatoes","Mayonnaise","Cheddar"]},
+      {name:"Chicken Caesar Salad",mealCats:["Lunch"],ingredients:["Chicken Breast","Lettuce","Parmesan","White Bread","Lemon","Garlic","Mayonnaise"]},
+      {name:"Mac and Cheese",mealCats:["Lunch"],ingredients:["Pasta","Cheddar","Milk","Butter","All-Purpose Flour","Black Pepper","Mustard Sauce"]},
+      {name:"Pulled Chicken Sandwich",mealCats:["Lunch"],ingredients:["Chicken Breast","Barbecue Sauce","Burger Buns","Coleslaw","Onions","Garlic","Smoked Paprika"]},
+      {name:"Cobb Salad",mealCats:["Lunch"],ingredients:["Chicken Breast","Bacon","Eggs","Lettuce","Avocado","Tomatoes","Cheddar"]},
+      {name:"Grilled Cheese Sandwich",mealCats:["Lunch"],ingredients:["White Bread","Cheddar","Butter","Tomatoes","Dijon Mustard"]},
+      {name:"Tuna Melt",mealCats:["Lunch"],ingredients:["White Bread","Salmon","Cheddar","Mayonnaise","Celery","Onions","Butter"]},
+      {name:"Corn Chowder",mealCats:["Lunch"],ingredients:["Corn","Potatoes","Milk","Butter","Onions","Garlic","Fresh Cream","Thyme","Bacon"]},
+      {name:"Black Bean Burger",mealCats:["Lunch"],ingredients:["Black Beans","Burger Buns","Lettuce","Tomatoes","Onions","Cheddar","Cumin Seeds","Smoked Paprika"]},
+      {name:"Nachos",mealCats:["Snacks"],ingredients:["Corn Tortillas","Cheddar","Salsa","Jalapeños","Sour Cream","Guacamole","Black Beans"]},
+      {name:"Buffalo Wings",mealCats:["Snacks"],ingredients:["Chicken Breast","Hot Sauce","Butter","Garlic","Celery","Sour Cream"]},
+      {name:"Potato Skins",mealCats:["Snacks"],ingredients:["Potatoes","Bacon","Cheddar","Sour Cream","Spring Onion","Butter"]},
+      {name:"Peanut Butter Cookies",mealCats:["Snacks"],ingredients:["Peanut Butter","Eggs","Sugar","All-Purpose Flour","Butter","Vanilla Extract"]},
+      {name:"Cornbread",mealCats:["Snacks"],ingredients:["Maize Flour","All-Purpose Flour","Eggs","Milk","Butter","Sugar","Baking Powder"]},
+      {name:"Deviled Eggs",mealCats:["Snacks"],ingredients:["Eggs","Mayonnaise","Dijon Mustard","Paprika","Chives"]},
+      {name:"Quesadillas",mealCats:["Snacks"],ingredients:["Tortilla Wraps","Cheddar","Black Beans","Salsa","Sour Cream"]},
+      {name:"Popcorn with Butter",mealCats:["Snacks"],ingredients:["Popcorn","Butter","Salt","Maple Syrup"]},
+      {name:"Chocolate Chip Cookies",mealCats:["Snacks"],ingredients:["All-Purpose Flour","Butter","Sugar","Eggs","Baking Soda","Vanilla Extract","Dark Chocolate"]},
+      {name:"Dip with Chips",mealCats:["Snacks"],ingredients:["Chips","Sour Cream","Salsa","Cheddar","Spring Onion","Hot Sauce"]},
+      {name:"BBQ Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Barbecue Sauce","Garlic","Onions","Smoked Paprika","Butter"]},
+      {name:"Classic Burger",mealCats:["Dinner"],ingredients:["Mutton","Burger Buns","Lettuce","Tomatoes","Onions","Cheddar","Mayonnaise","Ketchup"]},
+      {name:"Chicken and Waffles",mealCats:["Dinner"],ingredients:["Chicken Breast","All-Purpose Flour","Eggs","Milk","Butter","Maple Syrup","Hot Sauce"]},
+      {name:"Meatloaf",mealCats:["Dinner"],ingredients:["Mutton","Eggs","Onions","Garlic","Tomato Ketchup","All-Purpose Flour","Worcestershire","Black Pepper"]},
+      {name:"Pasta with Bacon",mealCats:["Dinner"],ingredients:["Pasta","Bacon","Cheddar","Cream Cheese","Garlic","Black Pepper","Butter"]},
+      {name:"Chicken Pot Pie",mealCats:["Dinner"],ingredients:["Chicken Breast","Carrots","Peas","Potatoes","Onions","All-Purpose Flour","Milk","Butter","Thyme"]},
+      {name:"Steak and Potatoes",mealCats:["Dinner"],ingredients:["Mutton","Potatoes","Butter","Garlic","Thyme","Rosemary","Black Pepper"]},
+      {name:"Corn on the Cob",mealCats:["Dinner"],ingredients:["Corn","Butter","Garlic","Smoked Paprika","Parsley","Lemon"]},
+      {name:"Southern Fried Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","All-Purpose Flour","Eggs","Milk","Smoked Paprika","Garlic","Hot Sauce","Black Pepper"]},
+      {name:"Clam Chowder Style Soup",mealCats:["Dinner"],ingredients:["Salmon","Potatoes","Corn","Onions","Celery","Milk","Fresh Cream","Butter","Thyme"]}
+    ]
+  }
+};
+
 const ANTHROPIC_API_KEY = "";
 const EMPTY_DISH = {
   name: "",
@@ -3188,8 +3829,12 @@ function SummaryItemTile({
     style: {
       width: "100%",
       height: "100%",
-      background: active ? C.white : C.card,
-      border: "1.5px solid " + (active ? tileCol : tileCol + "55"),
+      background: active
+        ? (C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "#ffffff" : C.white)
+        : (C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "#e0e0e0" : C.card),
+      border: active
+        ? "1.5px solid " + tileCol
+        : "1.5px dashed " + (C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "rgba(0,0,0,0.2)" : C.border2),
       borderRadius: 8,
       display: "flex",
       flexDirection: "column",
@@ -3202,22 +3847,14 @@ function SummaryItemTile({
       overflow: "hidden",
       position: "relative"
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: 3,
-      background: active ? tileCol : tileCol + "44",
-      borderRadius: "0 0 6px 6px"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
+  },  /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: Math.max(6, (size - 10) * 0.103),
       fontWeight: 700,
       textAlign: "center",
-      color: active ? C.bg : C.white,
+      color: (C.bg === "#ebebeb" || C.bg === "#f0f0f0")
+        ? (active ? "#111111" : "#888888")
+        : (active ? C.bg : C.white),
       textTransform: "uppercase",
       letterSpacing: 0,
       lineHeight: 1.2,
@@ -3815,7 +4452,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [items, setItems] = useState(DEFAULT_ITEMS);
+  const [items, setItems] = useState([]);
   const [stock, setStock] = useState({});
   const [dishes, setDishes] = useState([]);
   const [menu, setMenu] = useState(null);
@@ -3880,13 +4517,16 @@ function App() {
   const [autoBackup, setAutoBackup] = useState(false);
   const [autoNutrition, setAutoNutrition] = useState(false);
   const [haptics, setHaptics] = useState(true);
-  const [theme, setTheme] = useState("dark"); // "dark" | "light"
+  const [theme, setTheme] = useState("light"); // "dark" | "light"
   const [cookTime, setCookTime] = useState(0); // 0=any, else minutes
   const [modelName, setModelName] = useState("claude-haiku-4-5-20251001");
   const [apiCost, setApiCost] = useState(0); // lifetime USD cost
   const [michelinWeekend, setMichelinWeekend] = useState(true);
   const [showCookNow, setShowCookNow] = useState(false);
-  // dietary profile: set of strings e.g. {"vegetarian","gluten-free","dairy-free","low-carb","vegan","nut-free"}
+  const [cuisines, setCuisines] = useState([]);
+  const [cuisineModal, setCuisineModal] = useState(null);
+  const [resetModal, setResetModal] = useState(0); // {key, mode:"add"|"remove"}
+  const [cuisineModalSel, setCuisineModalSel] = useState({}); // {items:bool,dishes:bool,ai:bool}
   const [dietary, setDietary] = useState({});
   // macros: {calories:0, protein:0, carbs:0, fat:0} — 0 means "no target"
   const [macros, setMacros] = useState({
@@ -3964,6 +4604,8 @@ function App() {
       if (smw != null) setMichelinWeekend(JSON.parse(smw));
       const scn = localStorage.getItem(SK.showCookNow);
       if (scn != null) setShowCookNow(JSON.parse(scn));
+      const scui = localStorage.getItem(SK.cuisines);
+      if (scui) setCuisines(JSON.parse(scui));
       const sdt = localStorage.getItem(SK.dietary);
       if (sdt) setDietary(JSON.parse(sdt));
       const smc = localStorage.getItem(SK.macros);
@@ -4050,6 +4692,9 @@ function App() {
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.showCookNow, JSON.stringify(showCookNow));
   }, [showCookNow, loaded]);
+  useEffect(() => {
+    if (loaded) localStorage.setItem(SK.cuisines, JSON.stringify(cuisines));
+  }, [cuisines, loaded]);
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.dietary, JSON.stringify(dietary));
   }, [dietary, loaded]);
@@ -4245,6 +4890,8 @@ function App() {
     var fruits=stockedItems.filter(function(i){return i.cat==="fruit";}).map(function(i){return i.name;});
     var vegs=stockedItems.filter(function(i){return i.cat==="veg";}).map(function(i){return i.name;});
     var dietFlags=Object.keys(dietary).filter(function(k){return dietary[k];});
+    if(cuisines&&cuisines.includes("vegan")&&!dietFlags.includes("Vegan")) dietFlags=dietFlags.concat(["Vegan"]);
+    if(cuisines&&cuisines.includes("vegan")&&!dietFlags.includes("Vegan")) dietFlags=dietFlags.concat(["Vegan"]);
     var macroLines=[];
     if(macros.calories>0)macroLines.push("cal:"+macros.calories);
     if(macros.protein>0)macroLines.push("prot:"+macros.protein+"g");
@@ -4897,6 +5544,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     });
     var stockDesc=Object.entries(stockByCat).map(function(e){return e[0]+": "+e[1].join(", ");}).join("; ")||"various";
     var dietFlags=Object.keys(dietary||{}).filter(function(k){return dietary[k];});
+    if(cuisines&&cuisines.includes("vegan")&&!dietFlags.includes("Vegan")) dietFlags=dietFlags.concat(["Vegan"]);
     var prompt="Write a concise recipe for: "+dishName+".\n"+
       "Use ONLY these pantry ingredients: "+stockDesc+". Staples always available: "+STAPLE.join(", ")+".\n"+
       (dietFlags.length?"Dietary: "+dietFlags.join(", ")+".\n":"")+
@@ -5178,6 +5826,28 @@ Only output the JSON. No markdown.`;
     }
     setCookNowResults([...matchedDishes.slice(0,2), ...aiResults.slice(0,1)]);
     setCookNowLoading(false);
+  }
+
+  function applyCuisinePreset(cuisineKey) {
+    var preset = CUISINE_PRESETS[cuisineKey];
+    if (!preset) return;
+    setItems(function(prev) {
+      var existingNames = new Set(prev.map(function(i){return i.name.toLowerCase().trim();}));
+      var newOnes = preset.items.map(function(name) {
+        return DEFAULT_ITEMS.find(function(di){return di.name.toLowerCase().trim()===name.toLowerCase().trim();}) || null;
+      }).filter(function(i){return i && !existingNames.has(i.name.toLowerCase().trim());});
+      return prev.concat(newOnes);
+    });
+    setDishes(function(prev) {
+      var existingNames = new Set(prev.map(function(d){return d.name.toLowerCase().trim();}));
+      var now = Date.now();
+      var newDishes = preset.dishes.filter(function(d){
+        return !existingNames.has(d.name.toLowerCase().trim());
+      }).map(function(d, idx){
+        return normaliseDish(Object.assign({}, d, {id: now + idx}));
+      });
+      return prev.concat(newDishes);
+    });
   }
   function normaliseDish(d) {
     // Fill fields that may be missing in older exports
@@ -5572,6 +6242,41 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
+      background: C.bg,
+      border: "1px solid " + C.border2,
+      borderRadius: 8,
+      padding: "14px",
+      marginBottom: 12
+    }
+  },
+    /*#__PURE__*/React.createElement("div", {
+      style: { fontSize: 9, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 8 }
+    }, "CUISINE PACKS"),
+    cuisines.length === 0
+      ? /*#__PURE__*/React.createElement("div", {
+          style: { fontSize: 10, color: C.dim2, marginBottom: 12, lineHeight: 1.5 }
+        }, "No cuisine packs loaded yet.")
+      : /*#__PURE__*/React.createElement("div", {
+          style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }
+        }, cuisines.map(function(key) {
+          var preset = CUISINE_PRESETS[key];
+          if(!preset) return null;
+          return /*#__PURE__*/React.createElement("div", {
+            key: key,
+            style: Object.assign({}, pill(true), {
+              padding: "5px 10px", fontSize: 10, cursor: "default",
+              display: "inline-flex", alignItems: "center", gap: 5
+            })
+          },
+            preset.label
+          );
+        })),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: function() { haptic("light"); setCuisineModal({key: null, mode: "pick"}); },
+      style: Object.assign({}, pill(false), { padding: "7px 14px", fontSize: 10, width: "100%" })
+    }, "+ Add Cuisine Pack")
+  ), /*#__PURE__*/React.createElement("div", {
+    style: {
       fontSize: 9,
       color: C.dim,
       letterSpacing: 2,
@@ -5642,12 +6347,6 @@ Only output the JSON. No markdown.`;
       flexShrink: 0
     }
   }, item.val ? "ON" : "OFF"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.dim2,
-      marginTop: -4
-    }
-  }, "Changes take effect immediately."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -5780,240 +6479,69 @@ Only output the JSON. No markdown.`;
       fontSize: 9
     }
   }, t === 0 ? "Any" : t + "m"))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.bg,
-      border: `1px solid ${C.border2}`,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.dim,
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 8
-    }
-  }, "DIETARY PROFILE"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.dim,
-      marginBottom: 10,
-      lineHeight: 1.5
-    }
-  }, "Passed to the AI on every menu generation."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: 6
-    }
-  }, ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "Keto", "Nut-Free", "Halal", "No Pork", "No Beef"].map(flag => {
-    const active = !!dietary[flag];
-    return /*#__PURE__*/React.createElement("button", {
-      key: flag,
-      onClick: () => {
-        haptic("light");
-        setDietary(prev => ({
-          ...prev,
-          [flag]: !prev[flag]
-        }));
-      },
-      style: {
-        ...pill(active),
-        padding: "6px 12px",
-        fontSize: 10
-      }
-    }, active ? "✓ " : "", flag);
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.bg,
-      border: `1px solid ${C.border2}`,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.dim,
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 4
-    }
-  }, "MACRO TARGETS"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.dim2,
-      marginBottom: 12,
-      lineHeight: 1.5
-    }
-  }, "Set to 0 to ignore. AI will aim to match these per day."), [{
-    key: "calories",
-    label: "Calories",
-    unit: "kcal",
-    max: 5000,
-    step: 50
-  }, {
-    key: "protein",
-    label: "Protein",
-    unit: "g",
-    max: 300,
-    step: 5
-  }, {
-    key: "carbs",
-    label: "Carbs",
-    unit: "g",
-    max: 500,
-    step: 5
-  }, {
-    key: "fat",
-    label: "Fat",
-    unit: "g",
-    max: 200,
-    step: 5
-  }].map(m => /*#__PURE__*/React.createElement("div", {
-    key: m.key,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: C.dim,
-      fontWeight: 600
-    }
-  }, m.label), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.dim2
-    }
-  }, macros[m.key] > 0 ? macros[m.key] + m.unit + " / day" : "No target")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      haptic("light");
-      setMacros(p => ({
-        ...p,
-        [m.key]: Math.max(0, p[m.key] - m.step)
-      }));
-    },
-    style: {
-      width: 28,
-      height: 28,
-      background: C.card,
-      border: "1px solid " + C.border2,
-      color: C.dim,
-      borderRadius: 5,
-      fontSize: 16,
-      cursor: "pointer",
-      fontFamily: C.font,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, "\u2212"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: macros[m.key] > 0 ? C.white : C.dim2,
-      minWidth: 44,
-      textAlign: "center"
-    }
-  }, macros[m.key] || 0), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      haptic("light");
-      setMacros(p => ({
-        ...p,
-        [m.key]: Math.min(m.max, p[m.key] + m.step)
-      }));
-    },
-    style: {
-      width: 28,
-      height: 28,
-      background: C.card,
-      border: "1px solid " + C.border2,
-      color: C.dim,
-      borderRadius: 5,
-      fontSize: 16,
-      cursor: "pointer",
-      fontFamily: C.font,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, "+"))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.dim,
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 8
-    }
-  }, "RESET DATA"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.dim,
-      marginBottom: 10,
-      lineHeight: 1.5
-    }
-  }, "Clears pantry items, stock, dishes, menu and recipes. Keeps API key, theme and preferences. Export a backup first."), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      if (window.confirm("Reset all pantry data? This cannot be undone. Your API key and settings are kept.")) {
-        haptic("heavy");
-        setItems(DEFAULT_ITEMS);
-        setStock({});
-        setDishes([]);
-        setMenu(null);
-        setRecipes({});
-        setLockedDays({});
-        setNutrition({});
-        setConfirmedDays({});
-        localStorage.removeItem(SK.items);
-        localStorage.removeItem(SK.stock);
-        localStorage.removeItem(SK.dishes);
-        localStorage.removeItem(SK.confirmedDays);
-        localStorage.removeItem(SK.menu);
-        localStorage.removeItem(SK.nextMenu);
-        localStorage.removeItem(SK.aiDishIng);
-        localStorage.removeItem(SK.recipes);
-        localStorage.removeItem(SK.lockedDays);
-        localStorage.setItem(VERSION_KEY, String(CURRENT_VERSION));
-      }
-    },
-    style: {
-      background: "transparent",
-      border: "1px solid " + C.border2,
-      color: C.dim,
-      borderRadius: 5,
-      padding: "8px 0",
-      width: "100%",
-      cursor: "pointer",
-      fontFamily: C.font,
-      fontSize: 10,
-      fontWeight: 600,
-      letterSpacing: 0.5
-    }
-  }, "RESET PANTRY DATA")), /*#__PURE__*/React.createElement("div", {
+      style:{fontSize:9,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:4}
+    }, "Default AI Slots"),
+    /*#__PURE__*/React.createElement("div", {
+      style:{fontSize:9,color:C.dim2,marginBottom:12}
+    }, "Default AI cells when opening Mixed mode. Tap any cell to toggle."),
+    (function(){
+      var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      var abbr={"Sunday":"Sun","Monday":"Mon","Tuesday":"Tue","Wednesday":"Wed","Thursday":"Thu","Friday":"Fri","Saturday":"Sat"};
+      var allKeys=[];
+      DAY_NAMES.forEach(function(d){mealCats.forEach(function(mc){allKeys.push(d+"|"+mc);});});
+      var allOn=allKeys.every(function(k){return !!(defaultAiSlots[k]);});
+      // Header row
+      var headerCells=[/*#__PURE__*/React.createElement("div",{key:"lbl",style:{width:64,flexShrink:0}})];
+      DAY_NAMES.forEach(function(d){
+        headerCells.push(/*#__PURE__*/React.createElement("div",{
+          key:d,style:{flex:1,textAlign:"center",fontSize:7,color:C.dim,fontWeight:700,letterSpacing:0.3,minWidth:30}
+        }, abbr[d]||d.slice(0,3).toUpperCase()));
+      });
+      var rows=[/*#__PURE__*/React.createElement("div",{key:"hdr",style:{display:"flex",gap:3,marginBottom:3}}, headerCells)];
+      mealCats.forEach(function(mc){
+        var cells=[/*#__PURE__*/React.createElement("div",{key:"mc",
+          style:{width:64,flexShrink:0,fontSize:9,color:C.dim,fontWeight:600,display:"flex",alignItems:"center"}
+        }, mc)];
+        DAY_NAMES.forEach(function(d){
+          var key=d+"|"+mc;
+          var on=!!(defaultAiSlots[key]);
+          cells.push(/*#__PURE__*/React.createElement("button",{
+            key:d,
+            onClick:function(){setDefaultAiSlots(function(p){var n=Object.assign({},p);n[key]=!n[key];return n;});},
+            style:{
+              flex:1,minWidth:30,height:28,borderRadius:4,border:"1px solid "+(on?C.white:C.border2),
+              background:on?C.white:"transparent",color:on?C.bg:C.dim2,
+              cursor:"pointer",fontFamily:C.font,fontSize:7,fontWeight:700,
+              display:"flex",alignItems:"center",justifyContent:"center",padding:0
+            }
+          }, on?"AI":""));
+        });
+        rows.push(/*#__PURE__*/React.createElement("div",{key:mc,style:{display:"flex",gap:3,marginBottom:3}}, cells));
+      });
+      rows.push(/*#__PURE__*/React.createElement("div",{key:"btns",style:{display:"flex",gap:6,marginTop:8}},
+        /*#__PURE__*/React.createElement("button",{
+          onClick:function(){setDefaultAiSlots(function(){
+            var n={};
+            if(!allOn) allKeys.forEach(function(k){n[k]=true;});
+            return n;
+          });},
+          style:{...pill(allOn),fontSize:9,padding:"4px 12px"}
+        }, allOn?"CLEAR ALL":"SELECT ALL")
+      ));
+      return /*#__PURE__*/React.createElement("div",{style:{overflowX:"auto"}}, rows);
+    })(),
+    /*#__PURE__*/React.createElement("div", {style:{marginTop:12}},
+      /*#__PURE__*/React.createElement("button", {
+        onClick:function(){
+          var updated=dishes.map(function(d){return Object.assign({},d,{suggestedCount:0});});
+          setDishes(updated);
+          showToast("All dish counts reset","success");
+        },
+        style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,borderRadius:5,padding:"6px 12px",cursor:"pointer",fontFamily:C.font,fontSize:9,letterSpacing:0.5}
+      }, "Reset Cook Counters")
+    )
+ ,
+  /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.bg,
       border: "1px solid " + C.border2,
@@ -6178,69 +6706,44 @@ Only output the JSON. No markdown.`;
     style: {background:C.bg,border:"1px solid "+C.border2,borderRadius:8,padding:"14px",marginBottom:12}
   },
     /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:4}
-    }, "Default AI Slots"),
-    /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,color:C.dim2,marginBottom:12}
-    }, "Default AI cells when opening Mixed mode. Tap any cell to toggle."),
-    (function(){
-      var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-      var abbr={"Sunday":"Sun","Monday":"Mon","Tuesday":"Tue","Wednesday":"Wed","Thursday":"Thu","Friday":"Fri","Saturday":"Sat"};
-      var allKeys=[];
-      DAY_NAMES.forEach(function(d){mealCats.forEach(function(mc){allKeys.push(d+"|"+mc);});});
-      var allOn=allKeys.every(function(k){return !!(defaultAiSlots[k]);});
-      // Header row
-      var headerCells=[/*#__PURE__*/React.createElement("div",{key:"lbl",style:{width:64,flexShrink:0}})];
-      DAY_NAMES.forEach(function(d){
-        headerCells.push(/*#__PURE__*/React.createElement("div",{
-          key:d,style:{flex:1,textAlign:"center",fontSize:7,color:C.dim,fontWeight:700,letterSpacing:0.3,minWidth:30}
-        }, abbr[d]||d.slice(0,3).toUpperCase()));
-      });
-      var rows=[/*#__PURE__*/React.createElement("div",{key:"hdr",style:{display:"flex",gap:3,marginBottom:3}}, headerCells)];
-      mealCats.forEach(function(mc){
-        var cells=[/*#__PURE__*/React.createElement("div",{key:"mc",
-          style:{width:64,flexShrink:0,fontSize:9,color:C.dim,fontWeight:600,display:"flex",alignItems:"center"}
-        }, mc)];
-        DAY_NAMES.forEach(function(d){
-          var key=d+"|"+mc;
-          var on=!!(defaultAiSlots[key]);
-          cells.push(/*#__PURE__*/React.createElement("button",{
-            key:d,
-            onClick:function(){setDefaultAiSlots(function(p){var n=Object.assign({},p);n[key]=!n[key];return n;});},
-            style:{
-              flex:1,minWidth:30,height:28,borderRadius:4,border:"1px solid "+(on?C.white:C.border2),
-              background:on?C.white:"transparent",color:on?C.bg:C.dim2,
-              cursor:"pointer",fontFamily:C.font,fontSize:7,fontWeight:700,
-              display:"flex",alignItems:"center",justifyContent:"center",padding:0
-            }
-          }, on?"AI":""));
-        });
-        rows.push(/*#__PURE__*/React.createElement("div",{key:mc,style:{display:"flex",gap:3,marginBottom:3}}, cells));
-      });
-      rows.push(/*#__PURE__*/React.createElement("div",{key:"btns",style:{display:"flex",gap:6,marginTop:8}},
-        /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setDefaultAiSlots(function(){
-            var n={};
-            if(!allOn) allKeys.forEach(function(k){n[k]=true;});
-            return n;
-          });},
-          style:{...pill(allOn),fontSize:9,padding:"4px 12px"}
-        }, allOn?"CLEAR ALL":"SELECT ALL")
-      ));
-      return /*#__PURE__*/React.createElement("div",{style:{overflowX:"auto"}}, rows);
-    })(),
-    /*#__PURE__*/React.createElement("div", {style:{marginTop:12}},
-      /*#__PURE__*/React.createElement("button", {
-        onClick:function(){
-          var updated=dishes.map(function(d){return Object.assign({},d,{suggestedCount:0});});
-          setDishes(updated);
-          showToast("All dish counts reset","success");
-        },
-        style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,borderRadius:5,padding:"6px 12px",cursor:"pointer",fontFamily:C.font,fontSize:9,letterSpacing:0.5}
-      }, "Reset Cook Counters")
-    )
-  ),
-  /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      border: "1px solid " + C.border2,
+      borderRadius: 8,
+      padding: "14px",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.dim,
+      letterSpacing: 2,
+      fontWeight: 700,
+      marginBottom: 8
+    }
+  }, "DATA SAFETY"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.dim,
+      marginBottom: 10,
+      lineHeight: 1.5
+    }
+  }, "Clears pantry items, stock, dishes, menu and recipes. Keeps API key, theme and preferences. Export a backup first."), /*#__PURE__*/React.createElement("button", {
+    onClick: function(){ haptic("light"); setResetModal(1); },
+    style: {
+      background: "transparent",
+      border: "1px solid " + C.border2,
+      color: C.dim,
+      borderRadius: 5,
+      padding: "8px 0",
+      width: "100%",
+      cursor: "pointer",
+      fontFamily: C.font,
+      fontSize: 10,
+      fontWeight: 600,
+      letterSpacing: 0.5
+    }
+  }, "RESET PANTRY DATA")),   /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.bg,
       border: "1px solid " + C.border2,
@@ -6261,7 +6764,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       lineHeight: 1.8
     }
-  }, "\u2713 All data saved to localStorage \u2014 survives app close & reboots", /*#__PURE__*/React.createElement("br", null), "\u2713 Export backup before clearing browser data", /*#__PURE__*/React.createElement("br", null), "\u2713 Auto-backup available (toggle above)", /*#__PURE__*/React.createElement("br", null), "\u2713 Your API key never leaves your device", /*#__PURE__*/React.createElement("br", null), "\u2713 No account or login needed"))), !showSettings && tab === "summary" && /*#__PURE__*/React.createElement("div", {
+  }, "\u2713 All data saved to localStorage \u2014 survives app close & reboots", /*#__PURE__*/React.createElement("br", null), "\u2713 Export backup before clearing browser data", /*#__PURE__*/React.createElement("br", null), "\u2713 Auto-backup available (toggle above)", /*#__PURE__*/React.createElement("br", null), "\u2713 Your API key never leaves your device", /*#__PURE__*/React.createElement("br", null), "\u2713 No account or login needed")) )), !showSettings && tab === "summary" && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "12px 10px 80px"
     }
@@ -6608,7 +7111,7 @@ Only output the JSON. No markdown.`;
     if(c4<3) vLosses.push("meal gaps");
     var vL=vLosses.join(" · ");
     var mets=[
-      {l:"PANTRY",v:stockedItems.length+"/"+items.length,sub:summaryFilter==="stocked"?"stocked":summaryFilter==="needed"?"out of stock":"all ingredients",f:"pantry"},
+      {l:"PANTRY",v:(summaryFilter==="needed"?neededItems.length:stockedItems.length)+"/"+items.length,sub:summaryFilter==="stocked"?"stocked":summaryFilter==="needed"?"out of stock":"all ingredients",f:"pantry"},
       {l:"UTILISED",v:uPct+"%",sub:"pantry used",f:null},
       {l:"FRUIT",v:fS+"/28",sub:"slots/wk",f:null},
       {l:"VEG",v:vS+"/28",sub:"slots/wk",f:null},
@@ -6619,17 +7122,21 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("div",{key:s.l,
         onClick:function(){if(!s.f)return;if(isP){setSummaryFilter(function(p){return p==="all"?"needed":p==="needed"?"stocked":"all";});}else{setSummaryFilter(function(p){return p===s.f?"all":s.f;});}},
         style:{flex:1,
-          background:isP?(pSt?(iLM?"#1a1a1a":"#f0f0f0"):pNd?C.card:C.bg):(summaryFilter===s.f?C.card:C.bg),
-          border:isP&&(pSt||pNd)?"1.5px solid "+C.border2:"1px solid "+(summaryFilter===s.f?C.border2:C.border),
+          background:isP
+            ?(pSt?(iLM?"#ffffff":"#f0f0f0"):pNd?(iLM?"#e0e0e0":C.card):C.bg)
+            :(summaryFilter===s.f?C.card:C.bg),
+          border:isP
+            ?(pSt?"1.5px solid "+C.border2:pNd?"1.5px dashed "+(iLM?"rgba(0,0,0,0.2)":C.border2):"1px solid "+C.border)
+            :"1px solid "+(summaryFilter===s.f?C.border2:C.border),
           borderRadius:7,padding:"7px 2px",textAlign:"center",
           cursor:s.f?"pointer":"default",transition:"all 0.15s"}
       },
         /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,lineHeight:1.1,
-          color:pSt?(iLM?"#ffffff":"#111111"):C.white}},s.v),
+          color:isP?(pSt?(iLM?"#111111":"#111111"):pNd?(iLM?"#888888":C.white):C.white):C.white}},s.v),
         /*#__PURE__*/React.createElement("div",{style:{fontSize:6,letterSpacing:0.5,marginTop:2,textTransform:"uppercase",
-          color:pSt?(iLM?"rgba(255,255,255,0.65)":"rgba(0,0,0,0.55)"):C.dim2}},s.l),
+          color:isP?(pSt?(iLM?"rgba(0,0,0,0.55)":C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.l),
         /*#__PURE__*/React.createElement("div",{style:{fontSize:6,marginTop:1,
-          color:pSt?(iLM?"rgba(255,255,255,0.65)":"rgba(0,0,0,0.55)"):C.dim2}},s.sub)
+          color:isP?(pSt?(iLM?"rgba(0,0,0,0.55)":C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.sub)
       );
     }));
   })(), showCookNow && /*#__PURE__*/React.createElement("div", {
@@ -6938,7 +7445,7 @@ Only output the JSON. No markdown.`;
       border:"1px solid "+(ignoreStock?C.white:C.dim2),
       background:ignoreStock?C.white:"transparent",
       color:ignoreStock?(C.bg===("#ebebeb")||C.bg===("#f0f0f0")?"#ffffff":"#111111"):C.dim2,
-      textDecoration:ignoreStock?"none":"line-through",
+      textDecoration:"none",
       WebkitAppearance:"none"}
   }, "Any Pantry"),
   /*#__PURE__*/React.createElement("button", {
@@ -8503,7 +9010,7 @@ Only output the JSON. No markdown.`;
     }, /*#__PURE__*/React.createElement("div", {
       style:{
         whiteSpace:"pre-wrap",lineHeight:1.8,fontSize:13,
-        color:(C.bg==="#f0f0f0"?"#1a1a1a":"#d4d4d4"),marginBottom:12,marginTop:8,
+        color:(C.bg==="#ebebeb"||C.bg==="#f0f0f0"?"#111111":"#d4d4d4"),marginBottom:12,marginTop:8,
         padding:"2px 0"
       }
     }, typeof recipes[recipeModal]==="string" ? recipes[recipeModal] : JSON.stringify(recipes[recipeModal],null,2))),
@@ -8691,7 +9198,7 @@ Only output the JSON. No markdown.`;
     style: {
       position: "fixed",
       inset: 0,
-      background: "rgba(0,0,0,0.97)",
+      background: C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "rgba(255,255,255,0.98)" : "rgba(0,0,0,0.97)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -8705,13 +9212,17 @@ Only output the JSON. No markdown.`;
       width: "100%",
       maxWidth: 420,
       overflowY: "auto",
-      maxHeight: "90vh"
+      maxHeight: "90vh",
+      background: C.card,
+      border: "1px solid " + C.border2,
+      borderRadius: 12,
+      padding: 24
     }
   }, onboardStep === 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 28,
       fontWeight: 800,
-      color: "#fff",
+      color: C.white,
       marginBottom: 8,
       letterSpacing: -0.5
     }
@@ -8750,7 +9261,7 @@ Only output the JSON. No markdown.`;
     style: {
       width: 38,
       height: 38,
-      background: "#1a1a1a",
+      background: C.card,
       border: "1px solid "+C.border,
       borderRadius: 8,
       display: "flex",
@@ -8786,11 +9297,78 @@ Only output the JSON. No markdown.`;
       fontSize: 13,
       marginTop: 8
     }
-  }, "GET STARTED \u2192")), onboardStep === 1 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "GET STARTED \u2192")), onboardStep === 1 && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", {
+        style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 }
+      }, "How do you cook at home?"),
+      /*#__PURE__*/React.createElement("div", {
+        style: { fontSize: 12, color: C.dim2, marginBottom: 20, lineHeight: 1.6 }
+      }, "Select your cuisines — we'll load the right ingredients and dishes automatically."),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }
+      }, ['south_indian', 'north_indian', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'american', 'vegan'].map(function(key) {
+        var preset = CUISINE_PRESETS[key];
+        if(!preset) return null;
+        var active = cuisines.includes(key);
+        return /*#__PURE__*/React.createElement("button", {
+          key: key,
+          onClick: function() {
+            haptic("light");
+            if (active) {
+              setCuisines(function(p) { return p.filter(function(c) { return c !== key; }); });
+            } else {
+              setCuisines(function(p) { return p.concat([key]); });
+            }
+          },
+          style: Object.assign({}, pill(active), { padding: "7px 12px", fontSize: 11 })
+        }, preset.label);
+      })),
+      cuisines.length > 0 && /*#__PURE__*/React.createElement("div", {
+        style: { fontSize: 10, color: C.dim2, marginBottom: 16, lineHeight: 1.5 }
+      }, (function(){
+        var totalItems = new Set();
+        var totalDishes = 0;
+        cuisines.forEach(function(k){
+          var p = CUISINE_PRESETS[k];
+          if(!p) return;
+          p.items.forEach(function(n){ totalItems.add(n); });
+          totalDishes += p.dishes.length;
+        });
+        return cuisines.length + " cuisine" + (cuisines.length>1?"s":"") + " selected · ~" + totalItems.size + " items · ~" + totalDishes + " dishes";
+      })()),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "flex", flexDirection: "column", gap: 8 }
+      },
+        /*#__PURE__*/React.createElement("button", {
+          onClick: function() {
+            cuisines.forEach(function(key) { applyCuisinePreset(key); });
+            setOnboardStep(2);
+          },
+          disabled: cuisines.length === 0,
+          style: Object.assign({}, pill(cuisines.length > 0), {
+            padding: "13px 0", fontSize: 13,
+            opacity: cuisines.length === 0 ? 0.4 : 1
+          })
+        }, cuisines.length === 0 ? "Select at least one cuisine" : "Set Up My Kitchen →"),
+        /*#__PURE__*/React.createElement("div", {
+          style: { display: "flex", gap: 8 }
+        },
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function() { setOnboardStep(0); },
+            style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 11 })
+          }, "← BACK"),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function() { setOnboardStep(2); },
+            style: { flex: 1, background: "transparent", border: "none", color: C.dim,
+              fontSize: 11, cursor: "pointer", fontFamily: C.font, padding: "10px 0" }
+          }, "Skip for now")
+        )
+      )
+    ), onboardStep === 2 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 20,
       fontWeight: 800,
-      color: "#fff",
+      color: C.white,
       marginBottom: 6
     }
   }, "Set up your API key"), /*#__PURE__*/React.createElement("div", {
@@ -8844,7 +9422,7 @@ Only output the JSON. No markdown.`;
       gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setOnboardStep(0),
+    onClick: () => setOnboardStep(1),
     style: {
       ...pill(false),
       flex: "0 0 auto",
@@ -8859,6 +9437,231 @@ Only output the JSON. No markdown.`;
       fontSize: 13
     }
   }, "LET ME IN \u2192"))))),
+  resetModal > 0 && /*#__PURE__*/React.createElement("div",{
+    onClick:function(){setResetModal(0);},
+    style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",display:"flex",
+      alignItems:"center",justifyContent:"center",zIndex:400,padding:16}
+  }, /*#__PURE__*/React.createElement("div",{
+    onClick:function(e){e.stopPropagation();},
+    style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,padding:24,width:"100%",maxWidth:360}
+  },
+    resetModal===1 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:15,fontWeight:800,color:C.white,marginBottom:8}},"Reset all data?"),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:C.dim,marginBottom:6,lineHeight:1.6}},"This will permanently delete:"),
+      /*#__PURE__*/React.createElement("div",{style:{marginBottom:16}},
+        /*#__PURE__*/React.createElement("div",{key:0,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• All pantry items and stock"),
+        /*#__PURE__*/React.createElement("div",{key:1,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• All saved dishes"),
+        /*#__PURE__*/React.createElement("div",{key:2,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• Weekly menu and recipes"),
+        /*#__PURE__*/React.createElement("div",{key:3,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• Confirmed and locked days"),
+        /*#__PURE__*/React.createElement("div",{key:4,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• Loaded cuisine packs")
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:C.dim,marginBottom:20,lineHeight:1.5}},"Your API key, theme and preferences are kept."),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8}},
+        /*#__PURE__*/React.createElement("button",{onClick:function(){setResetModal(0);},
+          style:{flex:1,background:"transparent",border:"1px solid "+C.border2,color:C.dim,
+            borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:600}},"CANCEL"),
+        /*#__PURE__*/React.createElement("button",{onClick:function(){haptic("medium");setResetModal(2);},
+          style:{flex:1,background:C.bg,border:"1px solid "+C.border2,color:C.white,
+            borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:700}},
+          "CONTINUE →")
+      )
+    ),
+    resetModal===2 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:15,fontWeight:800,color:"#ff4444",marginBottom:8}},"Are you absolutely sure?"),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:C.dim,marginBottom:20,lineHeight:1.6}},"There is no undo. All your pantry data, dishes and menus will be gone. Export a backup first if you want to restore later."),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
+        /*#__PURE__*/React.createElement("button",{
+          onClick:function(){
+            haptic("heavy");
+            setItems([]); setStock({}); setDishes([]); setMenu(null); setNextMenu(null);
+            setRecipes({}); setLockedDays({}); setNutrition({}); setConfirmedDays({}); setCuisines([]);
+            setOnboarded(false); setOnboardStep(0);
+            [SK.items,SK.stock,SK.dishes,SK.confirmedDays,SK.menu,SK.nextMenu,
+             SK.aiDishIng,SK.recipes,SK.lockedDays,SK.cuisines,SK.onboarded].forEach(function(k){localStorage.removeItem(k);});
+            localStorage.setItem(VERSION_KEY,String(CURRENT_VERSION));
+            setResetModal(0);
+          },
+          style:{background:"#ff4444",border:"none",color:"#ffffff",borderRadius:6,
+            padding:"13px 0",cursor:"pointer",fontFamily:C.font,fontSize:12,fontWeight:800}
+        },"YES, RESET EVERYTHING"),
+        /*#__PURE__*/React.createElement("button",{onClick:function(){setResetModal(0);},
+          style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
+            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:600}},"CANCEL")
+      )
+    )
+  )),
+    // Cuisine load/remove modal
+  cuisineModal && (function(){
+    // Pick mode: show cuisine grid to select which to add
+    if(cuisineModal.mode === "pick"){
+      var unloaded = ['south_indian','north_indian','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','american','vegan'].filter(function(k){return !cuisines.includes(k);});
+      if(unloaded.length === 0){
+        return /*#__PURE__*/React.createElement("div",{
+          onClick:function(){setCuisineModal(null);},
+          style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",
+            alignItems:"center",justifyContent:"center",zIndex:350,padding:16}
+        }, /*#__PURE__*/React.createElement("div",{
+          onClick:function(e){e.stopPropagation();},
+          style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
+            padding:20,width:"100%",maxWidth:380,textAlign:"center"}
+        },
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginBottom:16}},"All cuisine packs are already loaded."),
+          /*#__PURE__*/React.createElement("button",{
+            onClick:function(){setCuisineModal(null);},
+            style:{background:C.bg,border:"1px solid "+C.border2,color:C.white,
+              borderRadius:6,padding:"9px 20px",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:600}
+          },"CLOSE")
+        ));
+      }
+      return /*#__PURE__*/React.createElement("div",{
+        onClick:function(){setCuisineModal(null);},
+        style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",
+          alignItems:"center",justifyContent:"center",zIndex:350,padding:16}
+      }, /*#__PURE__*/React.createElement("div",{
+        onClick:function(e){e.stopPropagation();},
+        style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
+          padding:20,width:"100%",maxWidth:380}
+      },
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white,marginBottom:4}},"Add a Cuisine Pack"),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:C.dim,marginBottom:16}},"Tap a cuisine to load its items and dishes."),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}},
+          unloaded.map(function(key){
+            var preset = CUISINE_PRESETS[key];
+            return /*#__PURE__*/React.createElement("button",{
+              key:key,
+              onClick:function(){
+                haptic("light");
+                setCuisineModal({key:key,mode:"add"});
+                setCuisineModalSel({items:true,dishes:true,ai:true});
+              },
+              style:Object.assign({},pill(false),{padding:"7px 12px",fontSize:10})
+            }, preset.label);
+          })
+        ),
+        /*#__PURE__*/React.createElement("button",{
+          onClick:function(){setCuisineModal(null);},
+          style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
+            borderRadius:6,padding:"9px 0",width:"100%",cursor:"pointer",
+            fontFamily:C.font,fontSize:10,fontWeight:600}
+        },"CANCEL")
+      ));
+    }
+    var key = cuisineModal.key;
+    var preset = CUISINE_PRESETS[key];
+    var isAdd = cuisineModal.mode === "add";
+    var opts = isAdd
+      ? [{id:"items",label:"Pantry Items",desc:"Add "+preset.items.length+" pantry items"},
+         {id:"dishes",label:"Dishes",desc:"Add "+preset.dishes.length+" dishes"},
+         {id:"ai",label:"AI Generation",desc:"Include in menu generation prompts"}]
+      : [{id:"ai",label:"AI Generation",desc:"Stop including in menu prompts"},
+         {id:"items",label:"Pantry Items",desc:"Remove items added by this cuisine"},
+         {id:"dishes",label:"Dishes",desc:"Remove this cuisine's dishes"}];
+    function applySelections(){
+      if(isAdd){
+        if(cuisineModalSel.items){
+          setItems(function(prev){
+            var existing=new Set(prev.map(function(i){return i.name.toLowerCase().trim();}));
+            var newOnes=preset.items.map(function(name){
+              return DEFAULT_ITEMS.find(function(di){return di.name.toLowerCase().trim()===name.toLowerCase().trim();})||null;
+            }).filter(function(i){return i&&!existing.has(i.name.toLowerCase().trim());});
+            return prev.concat(newOnes);
+          });
+        }
+        if(cuisineModalSel.dishes){
+          setDishes(function(prev){
+            var existing=new Set(prev.map(function(d){return d.name.toLowerCase().trim();}));
+            var now=Date.now();
+            var newD=preset.dishes.filter(function(d){return !existing.has(d.name.toLowerCase().trim());})
+              .map(function(d,idx){return normaliseDish(Object.assign({},d,{id:now+idx}));});
+            return prev.concat(newD);
+          });
+        }
+        if(cuisineModalSel.ai){
+          setCuisines(function(p){return p.includes(key)?p:p.concat([key]);});
+        }
+      } else {
+        if(cuisineModalSel.ai){
+          setCuisines(function(p){return p.filter(function(c){return c!==key;});});
+        }
+        if(cuisineModalSel.items){
+          var otherCuisineItems=new Set();
+          cuisines.filter(function(c){return c!==key;}).forEach(function(c){
+            (CUISINE_PRESETS[c]&&CUISINE_PRESETS[c].items||[]).forEach(function(n){otherCuisineItems.add(n.toLowerCase().trim());});
+          });
+          setItems(function(prev){
+            return prev.filter(function(it){
+              var inThis=preset.items.some(function(n){return n.toLowerCase().trim()===it.name.toLowerCase().trim();});
+              return !inThis||otherCuisineItems.has(it.name.toLowerCase().trim());
+            });
+          });
+        }
+        if(cuisineModalSel.dishes){
+          var dishNames=new Set(preset.dishes.map(function(d){return d.name.toLowerCase().trim();}));
+          setDishes(function(prev){return prev.filter(function(d){return !dishNames.has(d.name.toLowerCase().trim());});});
+        }
+      }
+      setCuisineModal(null);
+      showToast((isAdd?"Loaded":"Updated")+" "+preset.label,"success");
+    }
+    return /*#__PURE__*/React.createElement("div",{
+      onClick:function(){setCuisineModal(null);},
+      style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",
+        alignItems:"center",justifyContent:"center",zIndex:350,padding:16}
+    }, /*#__PURE__*/React.createElement("div",{
+      onClick:function(e){e.stopPropagation();},
+      style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
+        padding:20,width:"100%",maxWidth:380}
+    },
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white,marginBottom:4}},
+        isAdd ? "Add "+preset.label : "Remove "+preset.label
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:C.dim,marginBottom:16,lineHeight:1.5}},
+        isAdd ? "Select what to load:" : "Select what to remove:"
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8,marginBottom:20}},
+        opts.map(function(opt){
+          var sel = cuisineModalSel[opt.id];
+          return /*#__PURE__*/React.createElement("div",{
+            key:opt.id,
+            onClick:function(){setCuisineModalSel(function(prev){return Object.assign({},prev,{[opt.id]:!prev[opt.id]});});},
+            style:{display:"flex",alignItems:"center",gap:12,background:sel?C.bg:"transparent",
+              border:"1px solid "+(sel?C.border2:C.border),borderRadius:7,
+              padding:"10px 14px",cursor:"pointer",transition:"all 0.15s"}
+          },
+            /*#__PURE__*/React.createElement("div",{style:{
+              width:16,height:16,borderRadius:3,flexShrink:0,
+              background:sel?C.white:"transparent",
+              border:"1.5px solid "+(sel?C.white:C.dim2),
+              display:"flex",alignItems:"center",justifyContent:"center"
+            }},
+              sel && /*#__PURE__*/React.createElement("div",{style:{
+                width:8,height:8,background:C.bg,borderRadius:1
+              }})
+            ),
+            /*#__PURE__*/React.createElement("div",null,
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,lineHeight:1.2}},opt.label),
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:2}},opt.desc)
+            )
+          );
+        })
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8}},
+        /*#__PURE__*/React.createElement("button",{
+          onClick:function(){setCuisineModal(null);},
+          style:{flex:1,background:"transparent",border:"1px solid "+C.border2,color:C.dim,
+            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:10,fontWeight:600}
+        },"CANCEL"),
+        /*#__PURE__*/React.createElement("button",{
+          onClick:applySelections,
+          disabled:!cuisineModalSel.items&&!cuisineModalSel.dishes&&!cuisineModalSel.ai,
+          style:{flex:2,background:C.white,border:"none",color:C.bg,
+            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,
+            fontSize:11,fontWeight:700,
+            opacity:(!cuisineModalSel.items&&!cuisineModalSel.dishes&&!cuisineModalSel.ai)?0.4:1}
+        }, isAdd ? "ADD" : "REMOVE")
+      )
+    ));
+  })(),
   // Toast
   toast && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -8945,6 +9748,29 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
