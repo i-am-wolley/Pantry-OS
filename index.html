@@ -406,6 +406,23 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -1013,7 +1030,7 @@ const CAT_COLOR = Object.fromEntries(PANTRY_CATEGORIES.map(c => [c.id, c.color])
 // Returns a readable category color based on current theme
 function catCol(color) {
   // Use C.bg to detect theme - C is mutable module-level, works in all components
-  var isLight = C.bg === "#ebebeb" || C.bg === "#f0f0f0";
+  var isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
   if (!isLight) return color;
   var darkMap = {
     "#e8e8e8": "#5a5a5a",
@@ -2739,7 +2756,7 @@ const DEFAULT_ITEMS = [
 
 ];
 const DEFAULT_MEAL_CATS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const WEEKEND = ["Saturday", "Sunday"];
 const SK = {
   items: "pantryos-items",
@@ -2767,7 +2784,8 @@ const SK = {
   modelName: "pantryos-model",
   apiCost: "pantryos-apicost",
   defaultAiSlots: "pantryos-defaultaislots",
-  confirmedDays: "pantryos-confirmeddays"
+  confirmedDays: "pantryos-confirmeddays",
+  lastAutoGen: "pantryos-lastautogen"
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3523,33 +3541,35 @@ function getDayName(offset = 0) {
 //  DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const DARK = {
-  bg: "#0a0a0a",
-  card: "#141414",
-  border: "#272727",
+  bg: "#0d0d0d",
+  card: "#181818",
+  border: "#252525",
   border2: "#303030",
-  white: "#f0f0f0",
-  dim: "#777",
-  dim2: "#444",
-  dim3: "#2a2a2a",
-  green: "#d4d4d4",
-  yellow: "#c0c0c0",
-  blue: "#c8c8c8",
-  gold: "#e8e8e8",
+  white: "#f2ede8",
+  dim: "#6a6a6a",
+  dim2: "#383838",
+  dim3: "#1e1e1e",
+  green: "#e0dbd6",
+  yellow: "#c8c3be",
+  blue: "#d0cbc6",
+  gold: "#c8a96e",
+  accent: "#c8a96e",
   font: "'Geist','Inter','DM Sans',system-ui,sans-serif"
 };
 const LIGHT = {
-  bg: "#ebebeb",
+  bg: "#f5f0ea",
   card: "#ffffff",
-  border: "#c0c0c0",
-  border2: "#a8a8a8",
-  white: "#0a0a0a",
-  dim: "#282828",
-  dim2: "#484848",
-  dim3: "#d0d0d0",
-  green: "#111111",
-  yellow: "#1a1a1a",
-  blue: "#181818",
-  gold: "#080808",
+  border: "#e2dcd5",
+  border2: "#c8c0b8",
+  white: "#18140f",
+  dim: "#6b6560",
+  dim2: "#9e9890",
+  dim3: "#ece7e0",
+  green: "#28221c",
+  yellow: "#1e1a14",
+  blue: "#1c1812",
+  gold: "#b8935a",
+  accent: "#b8935a",
   font: "'Geist','Inter','DM Sans',system-ui,sans-serif"
 };
 // Mutable module-level theme object - updated by App before each render
@@ -3564,15 +3584,15 @@ function mkPill(C) {
       background: active ? col : "transparent",
       color: active ? isDefault ? C.bg : C.white : C.dim,
       border: "1px solid " + (active ? col : C.dim2),
-      borderRadius: 5,
+      borderRadius: 8,
       cursor: "pointer",
       fontFamily: C.font,
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 600,
-      letterSpacing: 0.5,
-      textTransform: "uppercase",
+      letterSpacing: 0.3,
+      textTransform: "none",
       transition: "all 0.12s",
-      padding: "6px 12px"
+      padding: "8px 14px"
     };
   };
 }
@@ -3584,7 +3604,7 @@ function mkInp(C) {
     borderRadius: 5,
     padding: "8px 10px",
     fontFamily: C.font,
-    fontSize: 13,
+    fontSize: 16,
     outline: "none",
     width: "100%",
     boxSizing: "border-box"
@@ -3636,7 +3656,7 @@ function Modal({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: 700,
       letterSpacing: 0.5
     }
@@ -3663,7 +3683,7 @@ function SizeSlider({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1
     }
@@ -3680,7 +3700,7 @@ function SizeSlider({
     }
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, value));
@@ -3772,7 +3792,7 @@ function PantryItemChip({
       border: "1px solid " + C.border2,
       borderRadius: 20,
       padding: "5px 10px",
-      fontSize: 11,
+      fontSize: 14,
       color: C.dim,
       fontWeight: 600,
       letterSpacing: 0.3,
@@ -3794,7 +3814,7 @@ function PantryItemChip({
       border: "none",
       color: C.dim,
       cursor: "pointer",
-      fontSize: 11,
+      fontSize: 14,
       padding: "0 0 0 2px",
       lineHeight: 1,
       opacity: 1,
@@ -3830,11 +3850,11 @@ function SummaryItemTile({
       width: "100%",
       height: "100%",
       background: active
-        ? (C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "#ffffff" : C.white)
-        : (C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "#e0e0e0" : C.card),
+        ? C.card
+        : (C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.03)"),
       border: active
-        ? "1.5px solid " + tileCol
-        : "1.5px dashed " + (C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "rgba(0,0,0,0.2)" : C.border2),
+        ? "1px solid " + C.border
+        : "1.5px dashed " + (C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.35)"),
       borderRadius: 8,
       display: "flex",
       flexDirection: "column",
@@ -3852,9 +3872,7 @@ function SummaryItemTile({
       fontSize: Math.max(6, (size - 10) * 0.103),
       fontWeight: 700,
       textAlign: "center",
-      color: (C.bg === "#ebebeb" || C.bg === "#f0f0f0")
-        ? (active ? "#111111" : "#888888")
-        : (active ? C.bg : C.white),
+      color: active ? C.white : C.dim,
       textTransform: "uppercase",
       letterSpacing: 0,
       lineHeight: 1.2,
@@ -3931,7 +3949,7 @@ function DishTile({
 }) {
   const cats = Array.isArray(dish.mealCats) ? dish.mealCats : [dish.mealCat || "Dinner"];
   const count = dish.suggestedCount || 0;
-  const isLight = C.bg === "#ebebeb" || C.bg === "#f0f0f0";
+  const isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
   return /*#__PURE__*/React.createElement("div", {
     style: {position:"relative",width:size,height:size,flexShrink:0}
   },
@@ -3941,7 +3959,7 @@ function DishTile({
       width:"100%", height:"100%",
       background: missingIngredients ? (isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.03)") : C.card,
       border: missingIngredients
-        ? "1.5px dashed " + (isLight ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.28)")
+        ? "1.5px dashed " + (isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.35)")
         : "1px solid "+C.border,
       borderRadius:8,
       display:"flex", flexDirection:"column",
@@ -3954,13 +3972,13 @@ function DishTile({
     }
   },
     /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:Math.max(7,size*0.085),fontWeight:700,textAlign:"center",
+      style:{fontSize:Math.max(10,size*0.09),fontWeight:700,textAlign:"center",
         color: missingIngredients ? C.dim : C.white,
         padding:"0 4px",lineHeight:1.2,wordBreak:"break-word",
         pointerEvents:"none"}
     }, dish.name),
     cats.length > 0 && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:Math.max(6,size*0.065),color:C.dim2,marginTop:2,textAlign:"center",
+      style:{fontSize:Math.max(9,size*0.07),color:isLight?C.dim:C.dim2,marginTop:2,textAlign:"center",
         pointerEvents:"none"}
     }, cats.map(function(c){return c[0];}).join("/"))
   ),
@@ -3969,15 +3987,15 @@ function DishTile({
   },
     count > 0 && /*#__PURE__*/React.createElement("div", {
       style:{
-        color: isLight ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.40)",
-        fontSize:7,fontWeight:700,lineHeight:1,
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.18)":"rgba(255,255,255,0.18)"),
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.55)",
+        fontSize:10,fontWeight:700,lineHeight:1,
+        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.25)"),
         borderRadius:3,padding:"1px 4px",background:"transparent",pointerEvents:"none"}
     }, count),
     onRemove && /*#__PURE__*/React.createElement("button", {
       onClick: function(e){e.stopPropagation();onRemove();},
       style:{background:"transparent",border:"none",
-        color: isLight ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.35)",
+        color: isLight ? "rgba(0,0,0,0.70)" : "rgba(255,255,255,0.50)",
         width:14,height:14,fontSize:9,cursor:"pointer",
         display:"flex",alignItems:"center",justifyContent:"center",
         lineHeight:1,padding:0,pointerEvents:"all",WebkitAppearance:"none"}
@@ -3987,24 +4005,24 @@ function DishTile({
     style:{position:"absolute",bottom:4,left:4,display:"flex",gap:2,pointerEvents:"none",zIndex:1}
   },
     dish.weekendOnly===true && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,
+      style:{fontSize:9,
         background:"transparent",
-        color: isLight ? "rgba(0,0,0,0.50)" : "rgba(255,255,255,0.50)",
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.20)":"rgba(255,255,255,0.20)"),
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
+        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.30)"),
         borderRadius:2,padding:"0px 3px",fontWeight:700,letterSpacing:0.3}
     }, "WE"),
     dish.weekendOnly==="weekday" && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,
+      style:{fontSize:9,
         background:"transparent",
-        color: isLight ? "rgba(0,0,0,0.50)" : "rgba(255,255,255,0.50)",
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.20)":"rgba(255,255,255,0.20)"),
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
+        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.30)"),
         borderRadius:2,padding:"0px 3px",fontWeight:700,letterSpacing:0.3}
     }, "WD"),
     dish.michelinLevel && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:6,
+      style:{fontSize:9,
         background:"transparent",
-        color: isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.55)",
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.22)":"rgba(255,255,255,0.22)"),
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
+        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.30)"),
         borderRadius:2,padding:"0px 3px",fontWeight:700}
     }, "G")
   ),
@@ -4039,18 +4057,17 @@ function DayCard({
   swapLoading,
   onSaveDish,
   dishes,
-  onConfirmDay,
   isConfirmed
 }) {
   if (!dayMenu) return null; // skip days not in current plan
-  const isLightDC = C.bg==="#ebebeb"||C.bg==="#f0f0f0"; const borderCol = locked ? (isLightDC?"#b0b0b0":"#3a3a3a") : isToday ? (isLightDC?"#888888":"#2e2e2e") : isTomorrow ? (isLightDC?"#aaaaaa":"#252525") : isWeekend ? (isLightDC?"#999999":"#2a2a2a") : (isLightDC?"#cccccc":"#1c1c1c");
+  const isLightDC = C.bg==="#ebebeb"||C.bg==="#f0f0f0"; const isConf=arguments[0]&&arguments[0].isConfirmed; const borderCol = locked ? (isLightDC?"#b0b0b0":"#3a3a3a") : isToday ? (isLightDC?"#888":"#2e2e2e") : isTomorrow ? (isLightDC?"#aaa":"#252525") : isWeekend ? (isLightDC?"#999":"#2a2a2a") : (isLightDC?"#ccc":"#1c1c1c");
   const labelCol = isToday ? C.white : isTomorrow ? C.dim : isWeekend ? C.white : C.dim;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
       border: "1px solid " + borderCol,
-      borderRadius: 8,
-      padding: "11px 13px",
+      borderRadius: 12,
+      padding: "12px 14px",
       opacity: 1,
       position: "relative"
     }
@@ -4063,7 +4080,7 @@ function DayCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: labelCol,
       letterSpacing: 1,
@@ -4072,7 +4089,7 @@ function DayCard({
     }
   }, day), isToday && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 11,
       background: C.bg,
       border: "1px solid " + C.border2,
       color: C.white,
@@ -4083,7 +4100,7 @@ function DayCard({
     }
   }, "TODAY"), isTomorrow && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 11,
       background: C.bg,
       border: "1px solid " + C.border2,
       color: C.white,
@@ -4094,7 +4111,7 @@ function DayCard({
     }
   }, "NEXT"), isWeekend && (isMichelinWeekendOverride===undefined?isMichelinWeekend:isMichelinWeekendOverride) && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 11,
       background: C.card,
       color: C.white,
       borderRadius: 3,
@@ -4106,11 +4123,12 @@ function DayCard({
     onClick: onToggleLock,
     style: {
       background: locked ? C.white : "transparent",
-      border: "1px solid " + (locked ? C.white : C.border2),
-      color: locked ? C.bg : C.dim,
+      border: "1px solid " + (locked ? C.border2 : C.border),
+      color: locked ? C.white : C.dim,
+      background: locked ? C.dim3 : "transparent",
       borderRadius: 4,
       padding: "2px 8px",
-      fontSize: 8,
+      fontSize: 11,
       cursor: "pointer",
       fontFamily: C.font,
       letterSpacing: 0.5,
@@ -4128,7 +4146,7 @@ function DayCard({
     style: {
       display: "flex",
       gap: 8,
-      fontSize: 10,
+      fontSize: 13,
       alignItems: "center"
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -4136,7 +4154,7 @@ function DayCard({
       color: C.dim,
       minWidth: 66,
       textTransform: "uppercase",
-      fontSize: 8,
+      fontSize: 11,
       flexShrink: 0
     }
   }, mc), /*#__PURE__*/React.createElement("span", {
@@ -4149,7 +4167,7 @@ function DayCard({
     return d.name === dayMenu[mc];
   }) && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 7,
+      fontSize: 10,
       fontWeight: 700,
       letterSpacing: 0.5,
       background: "rgba(255,255,255,0.12)",
@@ -4175,7 +4193,7 @@ function DayCard({
       color: swapLoading ? C.dim2 : C.dim,
       borderRadius: 4,
       padding: "2px 6px",
-      fontSize: 8,
+      fontSize: 11,
       cursor: swapLoading ? "default" : "pointer",
       fontFamily: C.font,
       letterSpacing: 0.5,
@@ -4192,7 +4210,7 @@ function DayCard({
         color: already ? C.dim : C.dim,
         borderRadius: 4,
         padding: "2px 6px",
-        fontSize: 8,
+        fontSize: 11,
         cursor: already ? "default" : "pointer",
         fontFamily: C.font,
         letterSpacing: 0.5,
@@ -4208,7 +4226,7 @@ function DayCard({
       color: recipes && recipes[dayMenu[mc]] ? C.white : C.dim,
       borderRadius: 4,
       padding: "2px 7px",
-      fontSize: 8,
+      fontSize: 11,
       cursor: "pointer",
       fontFamily: C.font,
       letterSpacing: 0.5,
@@ -4218,21 +4236,10 @@ function DayCard({
   }, recipes && recipes[dayMenu[mc]] ? "View Recipe" : "GET RECIPE"))) : null)) : /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim2,
-      fontSize: 10
+      fontSize: 13
     }
-  }, "\u2014"),
-  onConfirmDay && dayMenu && Object.keys(dayMenu).length > 0 && /*#__PURE__*/React.createElement("button", {
-    onClick: function() { if(onConfirmDay && !isConfirmed) onConfirmDay(day); },
-    disabled: !!isConfirmed,
-    style: {
-      marginTop:8,width:"100%",background:"transparent",
-      border:"1px solid "+C.border2,borderRadius:5,
-      color:isConfirmed?C.dim2:C.dim,
-      fontSize:9,fontWeight:700,letterSpacing:0.5,padding:"5px 0",
-      cursor:isConfirmed?"default":"pointer",fontFamily:C.font,
-      opacity:isConfirmed?0.35:1,filter:isConfirmed?"grayscale(100%)":"none"
-    }
-  }, isConfirmed?"\u2713 CONFIRMED":"\u2713 CONFIRM DAY"));
+  }, "\u2014")
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4301,15 +4308,15 @@ function BackupPanel({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.dim,
-      letterSpacing: 2,
+      letterSpacing: 0.3,
       fontWeight: 700,
-      marginBottom: 8
+      marginBottom: 12
     }
   }, "DATA BACKUP"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       marginBottom: 10,
       lineHeight: 1.6
@@ -4325,14 +4332,14 @@ function BackupPanel({
       ...mkPill(C)(true),
       flex: 1,
       padding: "9px 0",
-      fontSize: 10
+      fontSize: 13
     }
   }, "\u2B07 EXPORT"), /*#__PURE__*/React.createElement("label", {
     style: {
       ...mkPill(C)(false),
       flex: 1,
       padding: "9px 0",
-      fontSize: 10,
+      fontSize: 13,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -4348,13 +4355,13 @@ function BackupPanel({
   }))), restoreErr && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 9,
+      fontSize: 12,
       marginTop: 8
     }
   }, "\u26A0 ", restoreErr), restoreOk && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.white,
-      fontSize: 9,
+      fontSize: 12,
       marginTop: 8
     }
   }, "\u2713 Restore successful"));
@@ -4419,7 +4426,7 @@ class ErrorBoundary extends React.Component {
           border: "none",
           borderRadius: 8,
           padding: "10px 24px",
-          fontSize: 13,
+          fontSize: 16,
           fontWeight: 700,
           cursor: "pointer"
         }
@@ -4437,7 +4444,7 @@ class ErrorBoundary extends React.Component {
           border: "1px solid "+C.border,
           borderRadius: 8,
           padding: "8px 24px",
-          fontSize: 11,
+          fontSize: 14,
           cursor: "pointer",
           marginTop: 10
         }
@@ -4524,6 +4531,7 @@ function App() {
   const [michelinWeekend, setMichelinWeekend] = useState(true);
   const [showCookNow, setShowCookNow] = useState(false);
   const [cuisines, setCuisines] = useState([]);
+  const [lastAutoGen, setLastAutoGen] = useState("");
   const [cuisineModal, setCuisineModal] = useState(null);
   const [resetModal, setResetModal] = useState(0); // {key, mode:"add"|"remove"}
   const [cuisineModalSel, setCuisineModalSel] = useState({}); // {items:bool,dishes:bool,ai:bool}
@@ -4606,6 +4614,8 @@ function App() {
       if (scn != null) setShowCookNow(JSON.parse(scn));
       const scui = localStorage.getItem(SK.cuisines);
       if (scui) setCuisines(JSON.parse(scui));
+      const slag = localStorage.getItem(SK.lastAutoGen);
+      if (slag) setLastAutoGen(slag);
       const sdt = localStorage.getItem(SK.dietary);
       if (sdt) setDietary(JSON.parse(sdt));
       const smc = localStorage.getItem(SK.macros);
@@ -4619,6 +4629,32 @@ function App() {
     }
     setLoaded(true);
   }, []);
+
+  // ── Missed reset guard: if app reopens Sunday after 00:30 and nextMenu exists, promote immediately ──
+  useEffect(() => {
+    if (!loaded) return;
+    const now = new Date();
+    const isSunday = now.getDay() === 0;
+    const isPastResetTime = now.getHours() > 0 || now.getMinutes() >= 30;
+    if (!isSunday || !isPastResetTime) return;
+    // Check localStorage directly for nextMenu (state may not be set yet)
+    try {
+      var snm = localStorage.getItem(SK.nextMenu);
+      if (!snm) return;
+      var storedNextMenu = JSON.parse(snm);
+      if (!storedNextMenu) return;
+      // Promote nextMenu → menu
+      setMenu(storedNextMenu);
+      localStorage.setItem(SK.menu, JSON.stringify(storedNextMenu));
+      setNextMenu(null);
+      localStorage.removeItem(SK.nextMenu);
+      setLockedDays({});
+      localStorage.removeItem(SK.lockedDays);
+      setConfirmedDays({});
+      localStorage.removeItem(SK.confirmedDays);
+      showToast("New week's menu loaded", "success");
+    } catch(e) {}
+  }, [loaded]);
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.items, JSON.stringify(items));
   }, [items, loaded]);
@@ -4695,6 +4731,9 @@ function App() {
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.cuisines, JSON.stringify(cuisines));
   }, [cuisines, loaded]);
+  useEffect(() => {
+    if (loaded) localStorage.setItem(SK.lastAutoGen, lastAutoGen);
+  }, [lastAutoGen, loaded]);
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.dietary, JSON.stringify(dietary));
   }, [dietary, loaded]);
@@ -4849,10 +4888,12 @@ function App() {
   })).filter(g => g.items.length > 0);
 
   // ── Generate Menu ──
-    async function generateMenu(){
+    async function generateMenu(overrides){
     setAiLoading(true); setAiError("");
+    var _genMode = (overrides && overrides.genMode) || genMode;
+    var _ignoreStock = (overrides && overrides.ignoreStock !== undefined) ? overrides.ignoreStock : ignoreStock;
 
-    const DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const DAY_NAMES=DAYS.slice(); // Sunday-first, matches getDay()
     const WEEKEND=["Saturday","Sunday"];
     const todayIdx=new Date().getDay();
     const isSaturday=todayIdx===6;
@@ -4862,7 +4903,7 @@ function App() {
 
     const stockedNameSet=new Set(stockedItems.map(function(i){return i.name.toLowerCase();}));
     function isFullyStocked(dish){
-      if(ignoreStock) return true; // ignore stock mode: all dishes eligible
+      if(_ignoreStock) return true; // ignore stock mode: all dishes eligible
       if(!dish.ingredients||dish.ingredients.length===0) return true;
       return dish.ingredients.every(function(ing){return stockedNameSet.has(ing.toLowerCase())||STAPLE_PASS.has(ing.toLowerCase());});
     }
@@ -4898,7 +4939,7 @@ function App() {
     if(macros.carbs>0)macroLines.push("carbs:"+macros.carbs+"g");
     if(macros.fat>0)macroLines.push("fat:"+macros.fat+"g");
 
-    if(genMode==="allai"){
+    if(_genMode==="allai"){
       // ALL AI: full AI for every non-locked slot
       if(!apiKey){ setAiError("No API key. Go to Settings."); setAiLoading(false); return; }
       var tmpl=remainingDays.map(function(d){
@@ -5265,11 +5306,12 @@ function App() {
     if(isSaturday){
       // Saturday: store as NEXT week's menu — don't overwrite current week
       setNextMenu(newMenu);
+      // Do NOT clear confirmedDays — current week's confirmed state must stay intact
     } else {
       setMenu(newMenu);
       setNextMenu(null); // clear any leftover next-week plan
+      setConfirmedDays({}); // flush confirmed state — new current week menu
     }
-    setConfirmedDays({}); // flush confirmed state when menu regenerates
     // After generate: update lockedForMenu — dishes in NEW menu=true, rest=false
     // (dishesForGen only exists in mixed mode; handle both modes)
     {
@@ -5639,16 +5681,89 @@ Only output the JSON. No markdown.`;
     setNutLoading(false);
   }
 
-  // ── Auto-reset menu at Sunday 12:00 AM (start of new week) ──
+
+  // ── Auto-scheduler: confirm past days + Saturday auto-generation ──
+  useEffect(() => {
+    if (!loaded) return;
+    const DAYS_ORDER = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    
+    function runScheduler() {
+      const now = new Date();
+      const todayIdx = now.getDay(); // 0=Sun, 6=Sat
+      const todayName = DAYS_ORDER[todayIdx];
+      const activeMenu = menu; // always current week only — never nextMenu
+      
+      // ── Check 1: Auto-confirm past days ──
+      if (activeMenu && activeMenu.plan && activeMenu.weekKey === getWeekKey()) {
+        // Only confirm from CURRENT week's menu — weekKey must match today's week
+        DAYS.forEach(function(dayName, idx) {
+          if (idx >= todayIdx) return; // only past days
+          if (confirmedDays && confirmedDays[dayName]) return; // already confirmed
+          if (!activeMenu.plan[dayName] || Object.keys(activeMenu.plan[dayName]).length === 0) return;
+          const dayPlan = activeMenu.plan[dayName];
+          const allDineOut = Object.values(dayPlan).every(function(d) { return d && d.indexOf("Dine Out") >= 0; });
+          if (allDineOut) return;
+          confirmDay(dayName, true); // silent — no toast for auto-confirm
+        });
+        // Saturday gap fix: on Sunday before 00:30, confirm Saturday of the just-ended week
+        if (todayIdx === 0) {
+          var satName = "Saturday";
+          var beforeReset = now.getHours() === 0 && now.getMinutes() < 30;
+          var satHasPlan = activeMenu.plan[satName] && Object.keys(activeMenu.plan[satName]).length > 0;
+          var satNotConfirmed = !(confirmedDays && confirmedDays[satName]);
+          var satNotAllDineOut = satHasPlan && !Object.values(activeMenu.plan[satName]).every(function(d){ return d && d.indexOf("Dine Out") >= 0; });
+          if (beforeReset && satHasPlan && satNotConfirmed && satNotAllDineOut) {
+            confirmDay(satName, true);
+          }
+        }
+      }
+      
+      // ── Check 2: Saturday midnight auto-generation ──
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const isSaturday = todayIdx === 6;
+      const isMidnightWindow = hour === 0 && minute >= 1 && minute <= 10;
+      
+      // Saturday: trigger any time during the day, not just midnight window
+      // This handles: app closed at midnight, reopened Saturday morning
+      if (isSaturday) {
+        const nextWeekKey = getWeekKey();
+        const alreadyGenerated = lastAutoGen === nextWeekKey;
+        const hasApiKey = !!apiKey;
+        const hasDishes = dishes && dishes.length >= 5;
+        const noNextMenu = !nextMenu;
+        
+        if (!alreadyGenerated && hasApiKey && hasDishes && noNextMenu) {
+          setLastAutoGen(nextWeekKey);
+          // Clear current week locks before generating next week
+          setLockedDays({});
+          localStorage.removeItem(SK.lockedDays);
+          // Show contextual toast based on time
+          const isNightWindow = hour === 0 && minute >= 1 && minute <= 10;
+          showToast(isNightWindow
+            ? "Auto-generating next week’s menu…"
+            : "Preparing next week’s menu…", "success");
+          generateMenu({genMode: "mixed", ignoreStock: true});
+        }
+      }
+    }
+    
+    // Run immediately on load, then every 60 seconds
+    runScheduler();
+    const interval = setInterval(runScheduler, 60000);
+    return () => clearInterval(interval);
+  }, [loaded, menu, nextMenu, confirmedDays, lastAutoGen, apiKey, dishes]);
+
+  // ── Auto-reset menu at Sunday 00:30 AM (gives scheduler time to confirm Saturday) ──
   useEffect(() => {
     if (!loaded) return;
     function scheduleWeekReset() {
       const now = new Date();
       // Next Sunday midnight
-      const daysUntilSun = now.getDay() === 0 ? 7 : 7 - now.getDay();
+      const daysUntilSun = (now.getDay() === 0 && (now.getHours() > 0 || now.getMinutes() >= 30)) ? 7 : (now.getDay() === 0 ? 0 : 7 - now.getDay());
       const target = new Date(now);
       target.setDate(now.getDate() + daysUntilSun);
-      target.setHours(0, 0, 0, 0);
+      target.setHours(0, 30, 0, 0); // 00:30 — gives scheduler 30min to confirm Saturday
       const msUntil = target - now;
       return setTimeout(() => {
         // If nextMenu exists (generated on Saturday), promote it → menu
@@ -5664,7 +5779,12 @@ Only output the JSON. No markdown.`;
           localStorage.setItem(SK.menu, JSON.stringify(storedNextMenu));
           setNextMenu(null);
           localStorage.removeItem(SK.nextMenu);
-          // Keep lockedDays, confirmedDays, nutrition — all belong to the new week
+          // Clear lockedDays and confirmedDays — they belong to the old week
+          setLockedDays({});
+          localStorage.removeItem(SK.lockedDays);
+          setConfirmedDays({});
+          localStorage.removeItem(SK.confirmedDays);
+          // Keep nutrition — belongs to the promoted plan
         } else {
           // No pre-generated plan — blank slate
           setMenu(null);
@@ -5889,8 +6009,8 @@ Only output the JSON. No markdown.`;
     setToast({msg: msg, type: type || "info"});
     setTimeout(function() { setToast(null); }, 3000);
   }
-  function confirmDay(dayName) {
-    var activeMenu = nextMenu || menu;
+  function confirmDay(dayName, silent) {
+    var activeMenu = menu; // confirm only from current week plan
     if (!activeMenu || !activeMenu.plan || !activeMenu.plan[dayName]) return;
     if (confirmedDays[dayName]) return; // already confirmed
     var dayPlan = activeMenu.plan[dayName];
@@ -5903,8 +6023,7 @@ Only output the JSON. No markdown.`;
     });
     setDishes(updated);
     setConfirmedDays(function(prev){ return Object.assign({},prev,{[dayName]:true}); });
-    setLockedDays(function(prev){ return Object.assign({},prev,{[dayName]:true}); });
-    showToast("Day confirmed & locked!", "success");
+    if (!silent) showToast("Day confirmed!", "success");
   }
   const TABS = [{
     t: "summary",
@@ -6005,14 +6124,15 @@ Only output the JSON. No markdown.`;
     }
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
-      fontWeight: 700,
-      letterSpacing: 0.5,
-      lineHeight: 1
+      fontSize: 16,
+      fontWeight: 800,
+      letterSpacing: -0.5,
+      lineHeight: 1,
+      color: C.bg==="#f5f0ea"?"#18140f":(C.accent||C.gold)
     }
   }, "Pantry OS"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 0.5,
       marginTop: 1
@@ -6025,7 +6145,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim2,
       letterSpacing: 0.5
     }
@@ -6037,7 +6157,7 @@ Only output the JSON. No markdown.`;
       color: showSettings ? C.white : C.dim,
       borderRadius: 5,
       padding: "5px 10px",
-      fontSize: 9,
+      fontSize: 12,
       cursor: "pointer",
       fontFamily: C.font,
       letterSpacing: 1,
@@ -6075,10 +6195,12 @@ Only output the JSON. No markdown.`;
       setShowSettings(false);
     },
     style: {
-      ...pill(tab === t),
+      background: "transparent",
+      color: tab === t ? (C.accent||C.gold) : C.dim,
+      border: "none",
       flex: 1,
       padding: "7px 0",
-      fontSize: 9,
+      fontSize: 12,
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
@@ -6088,7 +6210,7 @@ Only output the JSON. No markdown.`;
     name: icon,
     size: 13,
     style: {
-      color: tab === t ? C.bg : C.dim
+      color: tab === t ? (C.accent||C.gold) : C.dim
     }
   }), /*#__PURE__*/React.createElement("span", null, label))))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -6102,7 +6224,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
@@ -6118,15 +6240,15 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.dim,
-      letterSpacing: 2,
+      letterSpacing: 0.3,
       fontWeight: 700,
-      marginBottom: 8
+      marginBottom: 12
     }
-  }, "ANTHROPIC API KEY"), /*#__PURE__*/React.createElement("div", {
+  }, "API Key"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       marginBottom: 10,
       lineHeight: 1.6
@@ -6159,34 +6281,35 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(false),
       padding: "8px 10px",
-      fontSize: 10,
+      fontSize: 13,
       flexShrink: 0
     }
   }, showApiKey ? "HIDE" : "SHOW")), apiKey && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       marginTop: 6
     }
   }, "\u2713 Key saved to this device")), /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
+      background: C.card,
+      border: "1px solid " + C.border,
+      borderRadius: 12,
+      padding: "18px",
+      marginBottom: 10,
+      boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
       marginBottom: 6
     }
-  }, "AI MODEL"), /*#__PURE__*/React.createElement("div", {
+  }, "AI Model"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       marginBottom: 10,
       lineHeight: 1.5
@@ -6210,7 +6333,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, "\u270E Custom model active"), /*#__PURE__*/React.createElement("button", {
@@ -6220,7 +6343,7 @@ Only output the JSON. No markdown.`;
       border: "none",
       color: C.dim,
       cursor: "pointer",
-      fontSize: 9,
+      fontSize: 12,
       fontFamily: C.font
     }
   }, "Reset to default"))), /*#__PURE__*/React.createElement(BackupPanel, {
@@ -6242,19 +6365,20 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
+      background: C.card,
+      border: "1px solid " + C.border,
+      borderRadius: 12,
+      padding: "18px",
+      marginBottom: 10,
+      boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
   },
     /*#__PURE__*/React.createElement("div", {
-      style: { fontSize: 9, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 8 }
-    }, "CUISINE PACKS"),
+      style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 8 }
+    }, "Cuisine Packs"),
     cuisines.length === 0
       ? /*#__PURE__*/React.createElement("div", {
-          style: { fontSize: 10, color: C.dim2, marginBottom: 12, lineHeight: 1.5 }
+          style: { fontSize: 13, color: C.dim2, marginBottom: 12, lineHeight: 1.5 }
         }, "No cuisine packs loaded yet.")
       : /*#__PURE__*/React.createElement("div", {
           style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }
@@ -6264,7 +6388,7 @@ Only output the JSON. No markdown.`;
           return /*#__PURE__*/React.createElement("div", {
             key: key,
             style: Object.assign({}, pill(true), {
-              padding: "5px 10px", fontSize: 10, cursor: "default",
+              padding: "5px 10px", fontSize: 13, cursor: "default",
               display: "inline-flex", alignItems: "center", gap: 5
             })
           },
@@ -6273,17 +6397,17 @@ Only output the JSON. No markdown.`;
         })),
     /*#__PURE__*/React.createElement("button", {
       onClick: function() { haptic("light"); setCuisineModal({key: null, mode: "pick"}); },
-      style: Object.assign({}, pill(false), { padding: "7px 14px", fontSize: 10, width: "100%" })
+      style: Object.assign({}, pill(false), { padding: "7px 14px", fontSize: 13, width: "100%" })
     }, "+ Add Cuisine Pack")
   ), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
       marginBottom: 12
     }
-  }, "FEATURES"), [{
+  }, "Features"), [{
     key: "autoBackup",
     val: autoBackup,
     set: setAutoBackup,
@@ -6327,14 +6451,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: C.dim,
       fontWeight: 600,
       marginBottom: 3
     }
   }, item.label), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       lineHeight: 1.5
     }
@@ -6343,7 +6467,7 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(item.val),
       padding: "5px 14px",
-      fontSize: 10,
+      fontSize: 13,
       flexShrink: 0
     }
   }, item.val ? "ON" : "OFF"))), /*#__PURE__*/React.createElement("div", {
@@ -6357,14 +6481,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: C.white,
       fontWeight: 600,
       marginBottom: 3
     }
   }, theme === "dark" ? "Dark Mode" : "Light Mode"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       lineHeight: 1.5
     }
@@ -6376,7 +6500,7 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(false),
       padding: "6px 14px",
-      fontSize: 10,
+      fontSize: 13,
       flexShrink: 0,
       background: theme === "light" ? C.border2 : C.card,
       color: theme === "light" ? "#111" : "#ccc",
@@ -6397,14 +6521,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: C.white,
       fontWeight: 600,
       marginBottom: 3
     }
   }, "Max Cook Time"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       lineHeight: 1.5
     }
@@ -6435,7 +6559,7 @@ Only output the JSON. No markdown.`;
     }
   }, "\u2212"), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: 700,
       color: cookTime > 0 ? C.white : C.dim2,
       minWidth: 44,
@@ -6476,13 +6600,13 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(cookTime === t),
       padding: "4px 10px",
-      fontSize: 9
+      fontSize: 12
     }
   }, t === 0 ? "Any" : t + "m"))))), /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:4}
+      style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:4}
     }, "Default AI Slots"),
     /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,color:C.dim2,marginBottom:12}
+      style:{fontSize:12,color:C.dim2,marginBottom:12}
     }, "Default AI cells when opening Mixed mode. Tap any cell to toggle."),
     (function(){
       var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -6494,13 +6618,13 @@ Only output the JSON. No markdown.`;
       var headerCells=[/*#__PURE__*/React.createElement("div",{key:"lbl",style:{width:64,flexShrink:0}})];
       DAY_NAMES.forEach(function(d){
         headerCells.push(/*#__PURE__*/React.createElement("div",{
-          key:d,style:{flex:1,textAlign:"center",fontSize:7,color:C.dim,fontWeight:700,letterSpacing:0.3,minWidth:30}
+          key:d,style:{flex:1,textAlign:"center",fontSize:10,color:C.dim,fontWeight:700,letterSpacing:0.3,minWidth:30}
         }, abbr[d]||d.slice(0,3).toUpperCase()));
       });
       var rows=[/*#__PURE__*/React.createElement("div",{key:"hdr",style:{display:"flex",gap:3,marginBottom:3}}, headerCells)];
       mealCats.forEach(function(mc){
         var cells=[/*#__PURE__*/React.createElement("div",{key:"mc",
-          style:{width:64,flexShrink:0,fontSize:9,color:C.dim,fontWeight:600,display:"flex",alignItems:"center"}
+          style:{width:64,flexShrink:0,fontSize:12,color:C.dim,fontWeight:600,display:"flex",alignItems:"center"}
         }, mc)];
         DAY_NAMES.forEach(function(d){
           var key=d+"|"+mc;
@@ -6511,7 +6635,7 @@ Only output the JSON. No markdown.`;
             style:{
               flex:1,minWidth:30,height:28,borderRadius:4,border:"1px solid "+(on?C.white:C.border2),
               background:on?C.white:"transparent",color:on?C.bg:C.dim2,
-              cursor:"pointer",fontFamily:C.font,fontSize:7,fontWeight:700,
+              cursor:"pointer",fontFamily:C.font,fontSize:10,fontWeight:700,
               display:"flex",alignItems:"center",justifyContent:"center",padding:0
             }
           }, on?"AI":""));
@@ -6525,7 +6649,7 @@ Only output the JSON. No markdown.`;
             if(!allOn) allKeys.forEach(function(k){n[k]=true;});
             return n;
           });},
-          style:{...pill(allOn),fontSize:9,padding:"4px 12px"}
+          style:{...pill(allOn),fontSize:12,padding:"4px 12px"}
         }, allOn?"CLEAR ALL":"SELECT ALL")
       ));
       return /*#__PURE__*/React.createElement("div",{style:{overflowX:"auto"}}, rows);
@@ -6537,27 +6661,28 @@ Only output the JSON. No markdown.`;
           setDishes(updated);
           showToast("All dish counts reset","success");
         },
-        style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,borderRadius:5,padding:"6px 12px",cursor:"pointer",fontFamily:C.font,fontSize:9,letterSpacing:0.5}
+        style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,borderRadius:5,padding:"6px 12px",cursor:"pointer",fontFamily:C.font,fontSize:12,letterSpacing:0.5}
       }, "Reset Cook Counters")
     )
  ,
   /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
+      background: C.card,
+      border: "1px solid " + C.border,
+      borderRadius: 12,
+      padding: "18px",
+      marginBottom: 10,
+      boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
       marginBottom: 10
     }
-  }, "DATA HEALTH"), (() => {
+  }, "Data Health"), (() => {
     const stockedCount = Object.keys(stock).filter(k => stock[k] === true || (stock[k] || 0) > 0).length;
     const orphaned = Object.keys(stock).filter(k => !items.find(i => String(i.id) === k)).length;
     const noIng = dishes.filter(d => !d.ingredients || d.ingredients.length === 0).length;
@@ -6601,7 +6726,7 @@ Only output the JSON. No markdown.`;
         style: {
           display: "flex",
           justifyContent: "space-between",
-          fontSize: 10,
+          fontSize: 13,
           paddingBottom: 6,
           borderBottom: i < 4 ? "1px solid " + C.border : "none"
         }
@@ -6628,27 +6753,28 @@ Only output the JSON. No markdown.`;
       style: {
         ...pill(true),
         padding: "6px 0",
-        fontSize: 9,
+        fontSize: 12,
         marginTop: 4
       }
     }, "Clean Up Stock Data"));
   })()), /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
+      background: C.card,
+      border: "1px solid " + C.border,
+      borderRadius: 12,
+      padding: "18px",
+      marginBottom: 10,
+      boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
       marginBottom: 10
     }
-  }, "API USAGE COST"), /*#__PURE__*/React.createElement("div", {
+  }, "API Usage"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -6664,7 +6790,7 @@ Only output the JSON. No markdown.`;
     }
   }, "$", apiCost.toFixed(4)), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       marginTop: 2
     }
@@ -6678,7 +6804,7 @@ Only output the JSON. No markdown.`;
       padding: "5px 10px",
       cursor: "pointer",
       fontFamily: C.font,
-      fontSize: 9,
+      fontSize: 12,
       letterSpacing: 0.5
     }
   }, "RESET")), [{
@@ -6698,7 +6824,7 @@ Only output the JSON. No markdown.`;
     style: {
       display: "flex",
       justifyContent: "space-between",
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim2,
       paddingBottom: 4
     }
@@ -6707,23 +6833,24 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
+      background: C.card,
+      border: "1px solid " + C.border,
+      borderRadius: 12,
+      padding: "18px",
+      marginBottom: 10,
+      boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.dim,
-      letterSpacing: 2,
+      letterSpacing: 0.3,
       fontWeight: 700,
-      marginBottom: 8
+      marginBottom: 12
     }
-  }, "DATA SAFETY"), /*#__PURE__*/React.createElement("div", {
+  }, "Data Safety"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       marginBottom: 10,
       lineHeight: 1.5
@@ -6739,7 +6866,7 @@ Only output the JSON. No markdown.`;
       width: "100%",
       cursor: "pointer",
       fontFamily: C.font,
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 600,
       letterSpacing: 0.5
     }
@@ -6752,15 +6879,15 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.dim,
-      letterSpacing: 2,
+      letterSpacing: 0.3,
       fontWeight: 700,
-      marginBottom: 8
+      marginBottom: 12
     }
   }, "DATA SAFETY"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       lineHeight: 1.8
     }
@@ -6774,7 +6901,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
@@ -6816,7 +6943,7 @@ Only output the JSON. No markdown.`;
   })), !menu && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 11,
+      fontSize: 14,
       marginBottom: 16,
       padding: 14,
       background: C.card,
@@ -6829,7 +6956,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
@@ -6870,12 +6997,12 @@ Only output the JSON. No markdown.`;
   })), menu && menu.plan && /*#__PURE__*/React.createElement("div", {
     style: {marginBottom:16}
   }, /*#__PURE__*/React.createElement("div", {
-    style:{fontSize:9,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
+    style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
       display:"flex",justifyContent:"space-between",alignItems:"center"}
   },
     /*#__PURE__*/React.createElement("span", null, "THIS WEEK'S SHOPPING"),
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
-      /*#__PURE__*/React.createElement("span", {style:{fontSize:8,color:C.dim2,fontWeight:400}},
+      /*#__PURE__*/React.createElement("span", {style:{fontSize:11,color:C.dim2,fontWeight:400}},
         "tap to mark restocked"),
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){
@@ -6934,7 +7061,7 @@ Only output the JSON. No markdown.`;
             });
           }
         },
-        style:{fontSize:8,color:C.dim,background:"transparent",border:"1px solid "+C.border2,
+        style:{fontSize:11,color:C.dim,background:"transparent",border:"1px solid "+C.border2,
           borderRadius:3,padding:"2px 6px",cursor:"pointer",fontFamily:C.font,fontWeight:700}
       },"✓ ALL")
     )
@@ -7005,7 +7132,7 @@ Only output the JSON. No markdown.`;
     });
     if(missingList.length===0 && unknownAI.length===0){
       return /*#__PURE__*/React.createElement("div", {
-        style:{fontSize:10,color:C.dim,padding:"8px 12px",background:C.card,
+        style:{fontSize:13,color:C.dim,padding:"8px 12px",background:C.card,
           borderRadius:6,border:"1px solid "+C.border}
       }, "\u2713 All ingredients stocked for this week");
     }
@@ -7031,7 +7158,7 @@ Only output the JSON. No markdown.`;
           },
           title: "For: "+entry.dishes.join(", ")+(entry.isAI?" (AI dish)":""),
           style:{
-            padding:"5px 10px",borderRadius:20,fontSize:10,fontWeight:600,
+            padding:"5px 10px",borderRadius:20,fontSize:13,fontWeight:600,
             background: isStockedNow ? C.card : C.bg,
             border:"1px solid "+(isStockedNow ? C.dim2 : C.border),
             color: isStockedNow ? C.dim : C.white,
@@ -7048,12 +7175,12 @@ Only output the JSON. No markdown.`;
           }),
           ing,
           entry.isAI && /*#__PURE__*/React.createElement("span", {
-            style:{fontSize:8,color:C.dim2,marginLeft:2}
+            style:{fontSize:11,color:C.dim2,marginLeft:2}
           }, "AI")
         );
       })),
       unknownAI.length>0 && /*#__PURE__*/React.createElement("div", {
-        style:{fontSize:9,color:C.dim2,marginTop:4,fontStyle:"italic"}
+        style:{fontSize:12,color:C.dim2,marginTop:4,fontStyle:"italic"}
       }, "Fetching ingredients for: ", unknownAI.join(", "), "\u2026")
     );
   })()),
@@ -7111,11 +7238,8 @@ Only output the JSON. No markdown.`;
     if(c4<3) vLosses.push("meal gaps");
     var vL=vLosses.join(" · ");
     var mets=[
-      {l:"PANTRY",v:(summaryFilter==="needed"?neededItems.length:stockedItems.length)+"/"+items.length,sub:summaryFilter==="stocked"?"stocked":summaryFilter==="needed"?"out of stock":"all ingredients",f:"pantry"},
-      {l:"UTILISED",v:uPct+"%",sub:"pantry used",f:null},
-      {l:"FRUIT",v:fS+"/28",sub:"slots/wk",f:null},
-      {l:"VEG",v:vS+"/28",sub:"slots/wk",f:null},
-      {l:"VARIETY",v:vSc+"/10",sub:vL,f:null}
+      {l:stockedItems.length+"",sub:"Stocked",f:"stocked",bg:"stocked"},
+      {l:neededItems.length+"",sub:"Unstocked",f:"needed",bg:"needed"}
     ];
     return /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:5,marginBottom:14}},mets.map(function(s){
       var isP=s.f==="pantry",pSt=isP&&summaryFilter==="stocked",pNd=isP&&summaryFilter==="needed",iLM=C.bg==="#ebebeb"||C.bg==="#f0f0f0";
@@ -7131,12 +7255,12 @@ Only output the JSON. No markdown.`;
           borderRadius:7,padding:"7px 2px",textAlign:"center",
           cursor:s.f?"pointer":"default",transition:"all 0.15s"}
       },
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,lineHeight:1.1,
-          color:isP?(pSt?(iLM?"#111111":"#111111"):pNd?(iLM?"#888888":C.white):C.white):C.white}},s.v),
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:6,letterSpacing:0.5,marginTop:2,textTransform:"uppercase",
-          color:isP?(pSt?(iLM?"rgba(0,0,0,0.55)":C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.l),
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:6,marginTop:1,
-          color:isP?(pSt?(iLM?"rgba(0,0,0,0.55)":C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.sub)
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:16,fontWeight:700,lineHeight:1.1,
+          color:isP?(pSt?(iLM?C.white:C.white):pNd?(iLM?"#888888":C.white):C.white):C.white}},s.v),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:11,letterSpacing:0.4,marginTop:2,textTransform:"uppercase",
+          color:isP?(pSt?(iLM?C.dim:C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.l),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:11,marginTop:1,
+          color:isP?(pSt?(iLM?C.dim:C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.sub)
       );
     }));
   })(), showCookNow && /*#__PURE__*/React.createElement("div", {
@@ -7158,7 +7282,7 @@ Only output the JSON. No markdown.`;
       padding: "5px 12px",
       cursor: "pointer",
       fontFamily: C.font,
-      fontSize: 9,
+      fontSize: 12,
       fontWeight: 600,
       letterSpacing: 0.5,
       display: "flex",
@@ -7167,7 +7291,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       fontWeight: 700
     }
   }, "\u25CE"), " WHAT CAN I COOK?")), summaryFilter !== "all" && /*#__PURE__*/React.createElement("div", {
@@ -7179,7 +7303,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700
@@ -7191,17 +7315,17 @@ Only output the JSON. No markdown.`;
       border: "none",
       color: C.dim,
       cursor: "pointer",
-      fontSize: 9,
+      fontSize: 12,
       letterSpacing: 0.5,
       fontFamily: C.font
     }
   }, "CLEAR FILTER \u2715")), summaryFilter === "all" && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.dim,
-      letterSpacing: 2,
+      letterSpacing: 0.3,
       fontWeight: 700,
-      marginBottom: 8
+      marginBottom: 12
     }
   }, "ALL PANTRY ITEMS ", /*#__PURE__*/React.createElement("span", {
     style: {
@@ -7241,7 +7365,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       borderRadius: 5,
       padding: "5px 12px",
-      fontSize: 9,
+      fontSize: 12,
       cursor: "pointer",
       fontFamily: C.font,
       letterSpacing: 0.5,
@@ -7273,7 +7397,7 @@ Only output the JSON. No markdown.`;
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 12,
         color: C.dim,
         letterSpacing: 0.5,
         fontWeight: 700,
@@ -7303,7 +7427,7 @@ Only output the JSON. No markdown.`;
         color: C.dim2,
         borderRadius: 4,
         padding: "2px 8px",
-        fontSize: 7,
+        fontSize: 10,
         cursor: "pointer",
         fontFamily: C.font,
         letterSpacing: 0.5,
@@ -7328,7 +7452,7 @@ Only output the JSON. No markdown.`;
   }), summaryItems.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 11,
+      fontSize: 14,
       padding: 20,
       textAlign: "center"
     }
@@ -7349,7 +7473,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700
@@ -7359,7 +7483,7 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(false),
       padding: "4px 8px",
-      fontSize: 9
+      fontSize: 12
     }
   }, "+ CAT")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7374,7 +7498,7 @@ Only output the JSON. No markdown.`;
       border: `1px solid ${C.border2}`,
       borderRadius: 4,
       padding: "4px 10px",
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim
     }
   }, c)))), /*#__PURE__*/React.createElement("div", {
@@ -7387,7 +7511,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
@@ -7402,14 +7526,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: C.white,
       fontWeight: 600,
       marginBottom: 2
     }
   }, "Gourmet Weekend Mode"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       lineHeight: 1.5
     }
@@ -7421,7 +7545,7 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(michelinWeekend),
       padding: "5px 14px",
-      fontSize: 10,
+      fontSize: 13,
       marginLeft: 12,
       flexShrink: 0
     }
@@ -7431,20 +7555,20 @@ Only output the JSON. No markdown.`;
   /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:4}},
     /*#__PURE__*/React.createElement("button", {
       onClick: () => setGenMode("allai"),
-      style: {...pill(genMode==="allai"),fontSize:9,padding:"5px 10px"}
+      style: {...pill(genMode==="allai"),fontSize:12,padding:"5px 10px"}
     }, "Full AI"),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => setGenMode("mixed"),
-      style: {...pill(genMode==="mixed"),fontSize:9,padding:"5px 10px"}
+      style: {...pill(genMode==="mixed"),fontSize:12,padding:"5px 10px"}
     }, "Mixed")
   ),
   /*#__PURE__*/React.createElement("button", {
     onClick: function(){ setIgnoreStock(function(v){return !v;}); },
-    style:{fontSize:9,padding:"5px 10px",cursor:"pointer",borderRadius:6,
+    style:{fontSize:12,padding:"5px 10px",cursor:"pointer",borderRadius:6,
       fontFamily:C.font,fontWeight:700,letterSpacing:0.3,
       border:"1px solid "+(ignoreStock?C.white:C.dim2),
       background:ignoreStock?C.white:"transparent",
-      color:ignoreStock?(C.bg===("#ebebeb")||C.bg===("#f0f0f0")?"#ffffff":"#111111"):C.dim2,
+      color:ignoreStock?C.bg:C.dim2,
       textDecoration:"none",
       WebkitAppearance:"none"}
   }, "Any Pantry"),
@@ -7474,16 +7598,16 @@ Only output the JSON. No markdown.`;
       }
     },
     disabled: aiLoading,
-    style: {...pill(true),flex:1,padding:"10px 0",fontSize:11,opacity:aiLoading?0.5:1}
+    style:{background:C.accent||C.gold,color:"#fff",border:"none",borderRadius:8,flex:1,padding:"10px 0",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:C.font,letterSpacing:0.3,transition:"all 0.12s",opacity:aiLoading?0.5:1}
   }, aiLoading ? "⏳ GENERATING…" : "✦ GENERATE"),), aiError && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 10,
+      fontSize: 13,
       marginTop: 8
     }
   }, aiError), null), (nextMenu||menu)?.plan && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 2,
       fontWeight: 700,
@@ -7494,7 +7618,7 @@ Only output the JSON. No markdown.`;
   /*#__PURE__*/React.createElement("button", {
     onClick: function(){ setLockedDays({}); setConfirmedDays({}); },
     style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
-      borderRadius:4,padding:"3px 8px",fontSize:8,cursor:"pointer",
+      borderRadius:4,padding:"3px 8px",fontSize:11,cursor:"pointer",
       fontFamily:C.font,letterSpacing:0.5,marginBottom:6,display:"block"}
   }, "\uD83D\uDD13 UNLOCK ALL DAYS"),
   /*#__PURE__*/React.createElement("div", {
@@ -7531,7 +7655,6 @@ Only output the JSON. No markdown.`;
     onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
     swapLoading: swapLoading,
     dishes: dishes,
-    onConfirmDay: (nextMenu||menu) && (nextMenu||menu).plan ? confirmDay : null,
     isConfirmed: !!(confirmedDays && confirmedDays[day]),
     onSaveDish: {
       saved: name => dishes.some(d => d.name === name),
@@ -7565,7 +7688,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       letterSpacing: 1,
       fontWeight: 700
@@ -7577,13 +7700,13 @@ Only output the JSON. No markdown.`;
     },
     style: {
       ...pill(true),
-      fontSize: 9,
+      fontSize: 12,
       padding: "5px 12px"
     }
   }, "+ ADD ITEM")), pantryGroups.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 11,
+      fontSize: 14,
       padding: 20
     }
   }, "No items yet. Tap + ADD ITEM."), pantryGroups.map(group => /*#__PURE__*/React.createElement("div", {
@@ -7608,14 +7731,14 @@ Only output the JSON. No markdown.`;
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       letterSpacing: 0.5,
       color: C.dim
     }
   }, group.label), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim2,
       marginLeft: 2
     }
@@ -7647,7 +7770,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: C.dim,
       letterSpacing: 1,
       fontWeight: 700
@@ -7673,7 +7796,7 @@ Only output the JSON. No markdown.`;
     },
     style: {
       ...pill(true),
-      fontSize: 9,
+      fontSize: 12,
       padding: "5px 10px"
     }
   }, "+ DISH"))),
@@ -7681,7 +7804,7 @@ Only output the JSON. No markdown.`;
     value: dishSearch,
     onChange: function(e){setDishSearch(e.target.value);},
     placeholder: "Search dishes…",
-    style: Object.assign({},inp,{marginBottom:10,fontSize:11})
+    style: Object.assign({},inp,{marginBottom:10,fontSize:14})
   }),
   mealCats.map(mc => {
     const catDishes = dishes.filter(d => {
@@ -7697,7 +7820,7 @@ Only output the JSON. No markdown.`;
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 12,
         color: C.dim,
         letterSpacing: 2,
         marginBottom: 7,
@@ -7741,7 +7864,7 @@ Only output the JSON. No markdown.`;
   }), dishes.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 11,
+      fontSize: 14,
       padding: 20
     }
   }, "No dishes yet. Tap + DISH.")), /*#__PURE__*/React.createElement(Modal, {
@@ -7754,7 +7877,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 4
@@ -7765,7 +7888,7 @@ Only output the JSON. No markdown.`;
     placeholder: "e.g. Ghee, Almonds\u2026 (comma-separate for multiple)"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       marginTop: 4
     }
@@ -7775,7 +7898,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 6
@@ -7792,7 +7915,7 @@ Only output the JSON. No markdown.`;
       ...pill(newType === t),
       flex: 1,
       padding: "8px 0",
-      fontSize: 10
+      fontSize: 13
     }
   }, t === "binary" ? "◻  Have / Don't Have" : "#  Count")))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7800,7 +7923,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 6
@@ -7815,13 +7938,14 @@ Only output the JSON. No markdown.`;
     key: pc.id,
     onClick: () => setNewCat(pc.id),
     style: {
-      background: newCat === pc.id ? catCol(pc.color) + "22" : "transparent",
+      background: newCat === pc.id ? catCol(pc.color) + "18" : C.card,
       color: newCat === pc.id ? catCol(pc.color) : C.dim,
-      border: "1px solid " + (newCat === pc.id ? catCol(pc.color) : C.dim2),
-      borderRadius: 5,
+      border: newCat === pc.id ? "2px solid " + catCol(pc.color) : "1px solid " + C.border,
+      borderRadius: 10,
       cursor: "pointer",
+      boxShadow: newCat === pc.id ? "0 2px 8px " + catCol(pc.color) + "33" : "none",
       fontFamily: C.font,
-      fontSize: 9,
+      fontSize: 12,
       fontWeight: 600,
       letterSpacing: 0.5,
       transition: "all 0.12s",
@@ -7894,7 +8018,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: 700,
       color: C.white
     }
@@ -7916,7 +8040,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 4
@@ -7934,7 +8058,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 3
@@ -7958,12 +8082,12 @@ Only output the JSON. No markdown.`;
       style: {
         ...pill(sel),
         padding: "6px 12px",
-        fontSize: 10
+        fontSize: 13
       }
     }, sel ? "✓ " : "", c);
   })), dishData.mealCats.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim2,
       marginTop: 4
     }
@@ -7973,7 +8097,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 5
@@ -8000,7 +8124,7 @@ Only output the JSON. No markdown.`;
       color: C.bg,
       borderRadius: 3,
       padding: "3px 7px",
-      fontSize: 9,
+      fontSize: 12,
       cursor: "pointer",
       fontWeight: 700
     }
@@ -8037,7 +8161,7 @@ Only output the JSON. No markdown.`;
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 8,
+        fontSize: 11,
         color: catCol(pc.color),
         letterSpacing: 0.5,
         fontWeight: 600
@@ -8059,7 +8183,7 @@ Only output the JSON. No markdown.`;
           border: "1px solid " + (sel ? C.white : C.border2),
           borderRadius: 3,
           padding: "4px 8px",
-          fontSize: 9,
+          fontSize: 12,
           cursor: "pointer"
         }
       }, i.name);
@@ -8085,14 +8209,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: C.white,
       letterSpacing: 0.3
     }
   }, dishAdvanced ? "▲ HIDE" : "▼ ADVANCED RULES"), !dishAdvanced && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       marginTop: 2
     }
@@ -8100,7 +8224,7 @@ Only output the JSON. No markdown.`;
     const activeRules = [dishData.mustInclude, (dishData.timesPerWeek || 0) > 0, (dishData.excludeWith || []).length > 0, dishData.weekendOnly, dishData.michelinLevel].filter(Boolean).length;
     return activeRules > 0 ? /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 12,
         background: C.white,
         color: C.bg,
         borderRadius: 10,
@@ -8131,14 +8255,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: C.white,
       marginBottom: 1
     }
   }, "Must-Include Rule"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, "Force into week when a key ingredient is stocked")), /*#__PURE__*/React.createElement("button", {
@@ -8150,7 +8274,7 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(dishData.mustInclude),
       padding: "5px 10px",
-      fontSize: 9,
+      fontSize: 12,
       marginLeft: 8
     }
   }, dishData.mustInclude ? "ON" : "OFF")), dishData.mustInclude && /*#__PURE__*/React.createElement("div", null,
@@ -8160,14 +8284,14 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("span", {
         key:name,
         onClick:function(){setDishData(function(d){return Object.assign({},d,{mustIncludeIngredients:(d.mustIncludeIngredients||[]).filter(function(x){return x!==name;})});});},
-        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer",fontWeight:700}
+        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, name+" ✕");
     })),
     /*#__PURE__*/React.createElement("input", {
       value: mustIncSearch,
       onChange: function(e){setMustIncSearch(e.target.value);},
       placeholder: "Search pantry items…",
-      style: Object.assign({},inp,{marginBottom:6,fontSize:11})
+      style: Object.assign({},inp,{marginBottom:6,fontSize:14})
     }),
     /*#__PURE__*/React.createElement("div", {
       style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:90,overflowY:"auto"}
@@ -8177,7 +8301,7 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("span", {
         key:i.id,
         onClick:function(){setDishData(function(d){return Object.assign({},d,{mustIncludeIngredients:[...(d.mustIncludeIngredients||[]),i.name]});});},
-        style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer"}
+        style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}
       }, i.name);
     }))
   )), /*#__PURE__*/React.createElement("div", {
@@ -8195,14 +8319,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: C.white,
       marginBottom: 1
     }
   }, "Weekly Frequency"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, "0 = no constraint \xB7 1\u20137 = exact times per week")), /*#__PURE__*/React.createElement(Stepper, {
@@ -8216,8 +8340,8 @@ Only output the JSON. No markdown.`;
   }))), /*#__PURE__*/React.createElement("div", {
     style:{background:C.bg,border:"1px solid "+C.border2,borderRadius:7,padding:"11px 12px"}
   },
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:10,fontWeight:700,color:C.white,marginBottom:4}}, "Exclusion Rule"),
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:9,color:C.dim2,marginBottom:8,lineHeight:1.5}},
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white,marginBottom:4}}, "Exclusion Rule"),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim2,marginBottom:8,lineHeight:1.5}},
       "If this dish appears this week, these dishes will NOT be suggested."
     ),
     (dishData.excludeWith||[]).length>0 && /*#__PURE__*/React.createElement("div", {
@@ -8226,7 +8350,7 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("span", {
         key:p,
         onClick:function(){setDishData(function(prev){return Object.assign({},prev,{excludeWith:(prev.excludeWith||[]).filter(function(x){return x!==p;})});});},
-        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer",fontWeight:700}
+        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, p+" \u2715");
     })),
     /*#__PURE__*/React.createElement("div", {style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:80,overflowY:"auto",
@@ -8237,7 +8361,7 @@ Only output the JSON. No markdown.`;
         return /*#__PURE__*/React.createElement("span", {
           key:d.id,
           onClick:function(){setDishData(function(prev){return Object.assign({},prev,{excludeWith:[...(prev.excludeWith||[]),d.name]});});},
-          style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer"}
+          style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}
         }, d.name);
       })
     )
@@ -8247,10 +8371,10 @@ Only output the JSON. No markdown.`;
   },
     [/*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white}},
             dishData.weekendOnly===true?"Weekend Only (Sat & Sun)":dishData.weekendOnly==="weekday"?"Weekday Only (Mon-Fri)":"Any Day"
           ),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:1}},
             dishData.weekendOnly===true?"Only appears Sat & Sun":dishData.weekendOnly==="weekday"?"Never appears on weekends":"Appears any day of week"
           )
         ),
@@ -8261,10 +8385,10 @@ Only output the JSON. No markdown.`;
             setDishData(function(p){return Object.assign({},p,{weekendOnly:next});});
           },
           style:{
-            background: dishData.weekendOnly===false ? "transparent" : "rgba(255,255,255,0.10)",
-            border: "1px solid " + (dishData.weekendOnly===false ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.55)"),
-            color: dishData.weekendOnly===false ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)",
-            borderRadius: 5, fontSize: 9, padding: "4px 10px",
+            background: dishData.weekendOnly===false ? "transparent" : C.card,
+            border: "1px solid " + (dishData.weekendOnly===false ? C.border : C.border2),
+            color: dishData.weekendOnly===false ? C.dim : C.white,
+            borderRadius: 5, fontSize: 12, padding: "4px 10px",
             cursor: "pointer", fontFamily: C.font, fontWeight: 700
           }
         },
@@ -8273,12 +8397,12 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Gourmet Level"),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Gourmet slots")
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white}},"Gourmet Level"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:1}},"Only in Gourmet slots")
         ),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){setDishData(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
-          style:{...pill(!!(dishData.michelinLevel)),fontSize:9,padding:"4px 12px"}
+          style:{...pill(!!(dishData.michelinLevel)),fontSize:12,padding:"4px 12px"}
         },dishData.michelinLevel?"ON":"OFF")
       )]
   ),
@@ -8350,7 +8474,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: 700,
       color: C.white
     }
@@ -8372,7 +8496,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 4
@@ -8390,7 +8514,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 3
@@ -8414,12 +8538,12 @@ Only output the JSON. No markdown.`;
       style: {
         ...pill(sel),
         padding: "6px 12px",
-        fontSize: 10
+        fontSize: 13
       }
     }, sel ? "✓ " : "", c);
   })), editDishModal.mealCats.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim2,
       marginTop: 4
     }
@@ -8429,7 +8553,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 5
@@ -8456,7 +8580,7 @@ Only output the JSON. No markdown.`;
       color: C.bg,
       borderRadius: 3,
       padding: "3px 7px",
-      fontSize: 9,
+      fontSize: 12,
       cursor: "pointer",
       fontWeight: 700
     }
@@ -8493,7 +8617,7 @@ Only output the JSON. No markdown.`;
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 8,
+        fontSize: 11,
         color: catCol(pc.color),
         letterSpacing: 0.5,
         fontWeight: 600
@@ -8515,7 +8639,7 @@ Only output the JSON. No markdown.`;
           border: "1px solid " + (sel ? C.white : C.border2),
           borderRadius: 3,
           padding: "4px 8px",
-          fontSize: 9,
+          fontSize: 12,
           cursor: "pointer"
         }
       }, i.name);
@@ -8541,14 +8665,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: C.white,
       letterSpacing: 0.3
     }
   }, dishAdvanced ? "▲ HIDE" : "▼ ADVANCED RULES"), !editDishAdvanced && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       marginTop: 2
     }
@@ -8556,7 +8680,7 @@ Only output the JSON. No markdown.`;
     const activeRules = [editDishModal.mustInclude, (editDishModal.timesPerWeek || 0) > 0, (editDishModal.excludeWith || []).length > 0, editDishModal.weekendOnly, editDishModal.michelinLevel].filter(Boolean).length;
     return activeRules > 0 ? /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 12,
         background: C.white,
         color: C.bg,
         borderRadius: 10,
@@ -8587,14 +8711,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: C.white,
       marginBottom: 1
     }
   }, "Must-Include Rule"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, "Force into week when a key ingredient is stocked")), /*#__PURE__*/React.createElement("button", {
@@ -8606,7 +8730,7 @@ Only output the JSON. No markdown.`;
     style: {
       ...pill(editDishModal.mustInclude),
       padding: "5px 10px",
-      fontSize: 9,
+      fontSize: 12,
       marginLeft: 8
     }
   }, editDishModal.mustInclude ? "ON" : "OFF")), editDishModal.mustInclude && /*#__PURE__*/React.createElement("div", null,
@@ -8616,14 +8740,14 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("span", {
         key:name,
         onClick:function(){setEditDishModal(function(d){return Object.assign({},d,{mustIncludeIngredients:(d.mustIncludeIngredients||[]).filter(function(x){return x!==name;})});});},
-        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer",fontWeight:700}
+        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, name+" ✕");
     })),
     /*#__PURE__*/React.createElement("input", {
       value: editMustIncSearch,
       onChange: function(e){setEditMustIncSearch(e.target.value);},
       placeholder: "Search pantry items…",
-      style: Object.assign({},inp,{marginBottom:6,fontSize:11})
+      style: Object.assign({},inp,{marginBottom:6,fontSize:14})
     }),
     /*#__PURE__*/React.createElement("div", {
       style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:90,overflowY:"auto"}
@@ -8633,7 +8757,7 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("span", {
         key:i.id,
         onClick:function(){setEditDishModal(function(d){return Object.assign({},d,{mustIncludeIngredients:[...(d.mustIncludeIngredients||[]),i.name]});});},
-        style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer"}
+        style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}
       }, i.name);
     }))
   )), /*#__PURE__*/React.createElement("div", {
@@ -8651,14 +8775,14 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 700,
       color: C.white,
       marginBottom: 1
     }
   }, "Weekly Frequency"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, "0 = no constraint \xB7 1\u20137 = exact times per week")), /*#__PURE__*/React.createElement(Stepper, {
@@ -8672,8 +8796,8 @@ Only output the JSON. No markdown.`;
   }))), /*#__PURE__*/React.createElement("div", {
     style:{background:C.bg,border:"1px solid "+C.border2,borderRadius:7,padding:"11px 12px"}
   },
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:10,fontWeight:700,color:C.white,marginBottom:4}}, "Exclusion Rule"),
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:9,color:C.dim2,marginBottom:8,lineHeight:1.5}},
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white,marginBottom:4}}, "Exclusion Rule"),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim2,marginBottom:8,lineHeight:1.5}},
       "If this dish appears this week, these dishes will NOT be suggested."
     ),
     (editDishModal.excludeWith||[]).length>0 && /*#__PURE__*/React.createElement("div", {
@@ -8682,7 +8806,7 @@ Only output the JSON. No markdown.`;
       return /*#__PURE__*/React.createElement("span", {
         key:p,
         onClick:function(){setEditDishModal(function(prev){return Object.assign({},prev,{excludeWith:(prev.excludeWith||[]).filter(function(x){return x!==p;})});});},
-        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer",fontWeight:700}
+        style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, p+" \u2715");
     })),
     /*#__PURE__*/React.createElement("div", {style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:80,overflowY:"auto",
@@ -8693,7 +8817,7 @@ Only output the JSON. No markdown.`;
         return /*#__PURE__*/React.createElement("span", {
           key:d.id,
           onClick:function(){setEditDishModal(function(prev){return Object.assign({},prev,{excludeWith:[...(prev.excludeWith||[]),d.name]});});},
-          style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:9,cursor:"pointer"}
+          style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}
         }, d.name);
       })
     )
@@ -8703,10 +8827,10 @@ Only output the JSON. No markdown.`;
   },
     [/*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white}},
             editDishModal.weekendOnly===true?"Weekend Only (Sat & Sun)":editDishModal.weekendOnly==="weekday"?"Weekday Only (Mon-Fri)":"Any Day"
           ),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:1}},
             editDishModal.weekendOnly===true?"Only appears Sat & Sun":editDishModal.weekendOnly==="weekday"?"Never appears on weekends":"Appears any day of week"
           )
         ),
@@ -8717,10 +8841,10 @@ Only output the JSON. No markdown.`;
             setEditDishModal(function(p){return Object.assign({},p,{weekendOnly:next});});
           },
           style:{
-            background: editDishModal.weekendOnly===false ? "transparent" : "rgba(255,255,255,0.10)",
-            border: "1px solid " + (editDishModal.weekendOnly===false ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.55)"),
-            color: editDishModal.weekendOnly===false ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)",
-            borderRadius: 5, fontSize: 9, padding: "4px 10px",
+            background: editDishModal.weekendOnly===false ? "transparent" : C.card,
+            border: "1px solid " + (editDishModal.weekendOnly===false ? C.border : C.border2),
+            color: editDishModal.weekendOnly===false ? C.dim : C.white,
+            borderRadius: 5, fontSize: 12, padding: "4px 10px",
             cursor: "pointer", fontFamily: C.font, fontWeight: 700
           }
         },
@@ -8729,12 +8853,12 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         /*#__PURE__*/React.createElement("div",null,
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.white}},"Gourmet Level"),
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:1}},"Only in Gourmet slots")
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white}},"Gourmet Level"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:1}},"Only in Gourmet slots")
         ),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){setEditDishModal(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
-          style:{...pill(!!(editDishModal.michelinLevel)),fontSize:9,padding:"4px 12px"}
+          style:{...pill(!!(editDishModal.michelinLevel)),fontSize:12,padding:"4px 12px"}
         },editDishModal.michelinLevel?"ON":"OFF")
       )]
   ),
@@ -8743,8 +8867,8 @@ Only output the JSON. No markdown.`;
       background:C.bg,border:"1px solid "+C.border2,borderRadius:7,padding:"11px 12px",marginBottom:10}
   },
     /*#__PURE__*/React.createElement("div", null,
-      /*#__PURE__*/React.createElement("div", {style:{fontSize:10,fontWeight:700,color:C.white}}, "Dish Cooked Counter"),
-      /*#__PURE__*/React.createElement("div", {style:{fontSize:9,color:C.dim,marginTop:1}}, "Lifetime times confirmed")
+      /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white}}, "Dish Cooked Counter"),
+      /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim,marginTop:1}}, "Lifetime times confirmed")
     ),
     /*#__PURE__*/React.createElement("div", {style:{display:"flex",alignItems:"center",gap:10}},
       /*#__PURE__*/React.createElement("span", {style:{fontSize:18,fontWeight:700,color:C.white}},
@@ -8752,7 +8876,7 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("button", {
         onClick: function(){setEditDishModal(function(p){return Object.assign({},p,{suggestedCount:0});});},
-        style: {...pill(false),fontSize:9,padding:"4px 10px"}
+        style: {...pill(false),fontSize:12,padding:"4px 10px"}
       }, "RESET")
     )
   ),
@@ -8791,11 +8915,11 @@ Only output the JSON. No markdown.`;
     style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
       padding:20,width:"100%",maxWidth:380,maxHeight:"75vh",overflowY:"auto"}
   },
-    /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:4}},"◎ WHAT CAN I COOK?"),
-    /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginBottom:14}},"What to cook for " + (function(){var h=new Date().getHours();return h<11?"Breakfast":h<15?"Lunch":h<18?"Snacks":"Dinner";})()),
-    cookNowLoading && /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:C.dim,textAlign:"center",padding:"20px 0"}},"⏳ Finding dishes…"),
-    cookNowError && /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"#f55",marginBottom:10}},cookNowError),
-    !cookNowLoading && cookNowResults.length===0 && !cookNowError && /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:C.dim,textAlign:"center",padding:"16px 0"}},"No matches found. Try stocking more items."),
+    /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:4}},"◎ WHAT CAN I COOK?"),
+    /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginBottom:14}},"What to cook for " + (function(){var h=new Date().getHours();return h<11?"Breakfast":h<15?"Lunch":h<18?"Snacks":"Dinner";})()),
+    cookNowLoading && /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:C.dim,textAlign:"center",padding:"20px 0"}},"⏳ Finding dishes…"),
+    cookNowError && /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:"#f55",marginBottom:10}},cookNowError),
+    !cookNowLoading && cookNowResults.length===0 && !cookNowError && /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:C.dim,textAlign:"center",padding:"16px 0"}},"No matches found. Try stocking more items."),
     !cookNowLoading && cookNowResults.map(function(r,i){
       return /*#__PURE__*/React.createElement("div",{
         key:i,
@@ -8803,19 +8927,19 @@ Only output the JSON. No markdown.`;
           padding:"10px 12px",marginBottom:8}
       },
         /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}},
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,flex:1,paddingRight:8}},r.name),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,flex:1,paddingRight:8}},r.name),
           /*#__PURE__*/React.createElement("button",{
             onClick:function(){setCookNowModal(false);fetchRecipe(r.name);},
-            style:{...pill(false),fontSize:8,padding:"3px 8px",flexShrink:0,whiteSpace:"nowrap"}
+            style:{...pill(false),fontSize:11,padding:"3px 8px",flexShrink:0,whiteSpace:"nowrap"}
           },"GET RECIPE")
         ),
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginBottom:4}},r.why),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginBottom:4}},r.why),
         r.ingredients && r.ingredients.length>0 && /*#__PURE__*/React.createElement("div",{
           style:{display:"flex",flexWrap:"wrap",gap:4}
         }, r.ingredients.map(function(ing,j){
           return /*#__PURE__*/React.createElement("span",{
             key:j,
-            style:{fontSize:8,color:C.dim2,background:C.card,border:"1px solid "+C.border,
+            style:{fontSize:11,color:C.dim2,background:C.card,border:"1px solid "+C.border,
               borderRadius:3,padding:"1px 5px"}
           }, ing);
         }))
@@ -8825,11 +8949,11 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){cookNow();},
         disabled:cookNowLoading,
-        style:{...pill(false),flex:1,padding:"8px 0",fontSize:10,opacity:cookNowLoading?0.5:1}
+        style:{...pill(false),flex:1,padding:"8px 0",fontSize:13,opacity:cookNowLoading?0.5:1}
       },"↺ Try Again"),
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){setCookNowModal(false);},
-        style:{...pill(true),flex:1,padding:"8px 0",fontSize:10}
+        style:{...pill(true),flex:1,padding:"8px 0",fontSize:13}
       },"DONE")
     )
   )),
@@ -8842,10 +8966,10 @@ Only output the JSON. No markdown.`;
     style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
       padding:20,width:"100%",maxWidth:380}
   },
-    /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:2}},"Change This Dish"),
-    /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginBottom:14}},
+    /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:2}},"Change This Dish"),
+    /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginBottom:14}},
       swapModal.mealCat+" · "+swapModal.day+" · replacing: "+swapModal.current),
-    swapError && /*#__PURE__*/React.createElement("div",{style:{color:"#f55",fontSize:9,marginBottom:8}},swapError),
+    swapError && /*#__PURE__*/React.createElement("div",{style:{color:"#f55",fontSize:12,marginBottom:8}},swapError),
     // 3 swap options
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8,marginBottom:14}},
       // INVENTORY option
@@ -8861,9 +8985,9 @@ Only output the JSON. No markdown.`;
         return /*#__PURE__*/React.createElement("div",{
           style:{background:C.bg,border:"1px solid "+C.border,borderRadius:7,padding:"10px 12px"}
         },
-          /*#__PURE__*/React.createElement("div",{style:{fontSize:9,fontWeight:700,color:C.white,marginBottom:6,letterSpacing:0.5}},"📦 My Dishes"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:700,color:C.white,marginBottom:6,letterSpacing:0.5}},"📦 My Dishes"),
           stocked.length===0
-            ? /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim2}},"No other stocked "+swapModal.mealCat+" dishes available")
+            ? /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim2}},"No other stocked "+swapModal.mealCat+" dishes available")
             : /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:5}},
                 stocked.slice(0,8).map(function(d){
                   return /*#__PURE__*/React.createElement("button",{
@@ -8875,7 +8999,7 @@ Only output the JSON. No markdown.`;
                       });
                       setSwapModal(null); setSwapError("");
                     },
-                    style:{...pill(false),fontSize:9,padding:"4px 8px"}
+                    style:{...pill(false),fontSize:12,padding:"4px 8px"}
                   },d.name);
                 })
               )
@@ -8890,18 +9014,18 @@ Only output the JSON. No markdown.`;
           });
           setSwapModal(null); setSwapError("");
         },
-        style:{...pill(false),width:"100%",padding:"10px 0",fontSize:10,textAlign:"left",paddingLeft:12}
+        style:{...pill(false),width:"100%",padding:"10px 0",fontSize:13,textAlign:"left",paddingLeft:12}
       },"🍽 Eating Out"),
       // AI option
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){swapDish(swapModal.day,swapModal.mealCat,swapModal.current,true);},
         disabled:swapLoading,
-        style:{...pill(true),width:"100%",padding:"10px 0",fontSize:10,opacity:swapLoading?0.6:1}
+        style:{...pill(true),width:"100%",padding:"10px 0",fontSize:13,opacity:swapLoading?0.6:1}
       },swapLoading?"⏳ FINDING…":"✦ Surprise Me")
     ),
     /*#__PURE__*/React.createElement("button",{
       onClick:function(){setSwapModal(null);setSwapError("");},
-      style:{...pill(false),width:"100%",padding:"8px 0",fontSize:10}
+      style:{...pill(false),width:"100%",padding:"8px 0",fontSize:13}
     },"CANCEL")
   )),
   recipeModal && /*#__PURE__*/React.createElement("div", {
@@ -8958,7 +9082,7 @@ Only output the JSON. No markdown.`;
     style: {
       display: "flex",
       gap: 10,
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim
     }
   }, recipes[recipeModal].servings && /*#__PURE__*/React.createElement("span", null, "Serves ", recipes[recipeModal].servings), recipes[recipeModal].prepTime && /*#__PURE__*/React.createElement("span", null, "Prep ", recipes[recipeModal].prepTime), recipes[recipeModal].cookTime && /*#__PURE__*/React.createElement("span", null, "Cook ", recipes[recipeModal].cookTime))), /*#__PURE__*/React.createElement("button", {
@@ -8979,7 +9103,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 8
@@ -8987,7 +9111,7 @@ Only output the JSON. No markdown.`;
   }, "FETCHING RECIPE\u2026")), recipeError && recipeFetching === '' && /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.dim,
-      fontSize: 11,
+      fontSize: 14,
       marginBottom: 12,
       padding: 10,
       background: "#1a1a1a",
@@ -9000,7 +9124,7 @@ Only output the JSON. No markdown.`;
       ...pill(true),
       marginLeft: 10,
       padding: "3px 8px",
-      fontSize: 9
+      fontSize: 12
     }
   }, "RETRY")), recipes[recipeModal] && recipeFetching !== recipeModal && /*#__PURE__*/React.createElement(React.Fragment, null,
     /*#__PURE__*/React.createElement("div", {
@@ -9009,8 +9133,8 @@ Only output the JSON. No markdown.`;
       }
     }, /*#__PURE__*/React.createElement("div", {
       style:{
-        whiteSpace:"pre-wrap",lineHeight:1.8,fontSize:13,
-        color:(C.bg==="#ebebeb"||C.bg==="#f0f0f0"?"#111111":"#d4d4d4"),marginBottom:12,marginTop:8,
+        whiteSpace:"pre-wrap",lineHeight:1.8,fontSize:16,
+        color:(C.bg==="#f5f0ea"||C.bg==="#f5f0ea"||C.bg==="#ebebeb"||C.bg==="#f0f0f0"?"#111111":C.white),marginBottom:12,marginTop:8,
         padding:"2px 0"
       }
     }, typeof recipes[recipeModal]==="string" ? recipes[recipeModal] : JSON.stringify(recipes[recipeModal],null,2))),
@@ -9019,7 +9143,7 @@ Only output the JSON. No markdown.`;
     },
       dishes.find(function(d){return d.name===recipeModal;}) ?
         /*#__PURE__*/React.createElement("div",{
-          style:{flex:1,fontSize:10,color:C.dim,display:"flex",alignItems:"center",gap:6}
+          style:{flex:1,fontSize:13,color:C.dim,display:"flex",alignItems:"center",gap:6}
         },
           /*#__PURE__*/React.createElement("span",{style:{width:6,height:6,borderRadius:"50%",background:"#444",display:"inline-block"}}),
           "Already in My Dishes"
@@ -9038,11 +9162,11 @@ Only output the JSON. No markdown.`;
             }
             addAiDishToMyDishes(recipeModal,mc);
           },
-          style:{...pill(true),flex:1,padding:"10px 0",fontSize:11}
+          style:{...pill(true),flex:1,padding:"10px 0",fontSize:14}
         }, "+ Add to My Dishes"),
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){setRecipeModal(null);},
-        style:{...pill(false),padding:"10px 14px",fontSize:11}
+        style:{...pill(false),padding:"10px 14px",fontSize:14}
       }, "Close")
     )
   ))), /*#__PURE__*/React.createElement(Modal, {
@@ -9055,7 +9179,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 4
@@ -9093,7 +9217,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 4
@@ -9111,7 +9235,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 6
@@ -9131,15 +9255,15 @@ Only output the JSON. No markdown.`;
       ...pill(editItemModal.type === t),
       flex: 1,
       padding: "8px 0",
-      fontSize: 10
+      fontSize: 13
     }
-  }, t === "binary" ? "⬜ Have / Don't Have" : "🔢 Count")))), /*#__PURE__*/React.createElement("div", {
+  }, t === "binary" ? "◻  Have / Don't Have" : "#  Count")))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: C.dim,
       letterSpacing: 1,
       marginBottom: 6
@@ -9163,7 +9287,7 @@ Only output the JSON. No markdown.`;
       borderRadius: 5,
       cursor: "pointer",
       fontFamily: C.font,
-      fontSize: 9,
+      fontSize: 12,
       fontWeight: 600,
       letterSpacing: 0.5,
       transition: "all 0.12s",
@@ -9198,7 +9322,7 @@ Only output the JSON. No markdown.`;
     style: {
       position: "fixed",
       inset: 0,
-      background: C.bg === "#ebebeb" || C.bg === "#f0f0f0" ? "rgba(255,255,255,0.98)" : "rgba(0,0,0,0.97)",
+      background: C.bg === "#f5f0ea" ? "rgba(245,240,234,0.99)" : "rgba(10,10,10,0.98)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -9220,11 +9344,11 @@ Only output the JSON. No markdown.`;
     }
   }, onboardStep === 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 28,
+      fontSize: 36,
       fontWeight: 800,
       color: C.white,
-      marginBottom: 8,
-      letterSpacing: -0.5
+      marginBottom: 6,
+      letterSpacing: -1.5
     }
   }, "Pantry OS"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9233,7 +9357,7 @@ Only output the JSON. No markdown.`;
       marginBottom: 28,
       lineHeight: 1.6
     }
-  }, "Your kitchen intelligence. Track what you have, plan what you eat."), [{
+  }, "Your kitchen, intelligently organised."), [{
     icon: "summaryTab",
     title: "Summary",
     desc: "See your pantry at a glance. Toggle items in/out of stock. View today & tomorrow's meals."
@@ -9277,7 +9401,7 @@ Only output the JSON. No markdown.`;
     }
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: 700,
       color: C.white,
       marginBottom: 3
@@ -9294,7 +9418,7 @@ Only output the JSON. No markdown.`;
       ...pill(true),
       width: "100%",
       padding: "13px 0",
-      fontSize: 13,
+      fontSize: 16,
       marginTop: 8
     }
   }, "GET STARTED \u2192")), onboardStep === 1 && /*#__PURE__*/React.createElement("div", null,
@@ -9320,11 +9444,11 @@ Only output the JSON. No markdown.`;
               setCuisines(function(p) { return p.concat([key]); });
             }
           },
-          style: Object.assign({}, pill(active), { padding: "7px 12px", fontSize: 11 })
+          style: Object.assign({}, pill(active), { padding: "7px 12px", fontSize: 14 })
         }, preset.label);
       })),
       cuisines.length > 0 && /*#__PURE__*/React.createElement("div", {
-        style: { fontSize: 10, color: C.dim2, marginBottom: 16, lineHeight: 1.5 }
+        style: { fontSize: 13, color: C.dim2, marginBottom: 16, lineHeight: 1.5 }
       }, (function(){
         var totalItems = new Set();
         var totalDishes = 0;
@@ -9346,7 +9470,7 @@ Only output the JSON. No markdown.`;
           },
           disabled: cuisines.length === 0,
           style: Object.assign({}, pill(cuisines.length > 0), {
-            padding: "13px 0", fontSize: 13,
+            padding: "13px 0", fontSize: 16,
             opacity: cuisines.length === 0 ? 0.4 : 1
           })
         }, cuisines.length === 0 ? "Select at least one cuisine" : "Set Up My Kitchen →"),
@@ -9355,12 +9479,12 @@ Only output the JSON. No markdown.`;
         },
           /*#__PURE__*/React.createElement("button", {
             onClick: function() { setOnboardStep(0); },
-            style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 11 })
+            style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 })
           }, "← BACK"),
           /*#__PURE__*/React.createElement("button", {
             onClick: function() { setOnboardStep(2); },
             style: { flex: 1, background: "transparent", border: "none", color: C.dim,
-              fontSize: 11, cursor: "pointer", fontFamily: C.font, padding: "10px 0" }
+              fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" }
           }, "Skip for now")
         )
       )
@@ -9373,7 +9497,7 @@ Only output the JSON. No markdown.`;
     }
   }, "Set up your API key"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
+      fontSize: 16,
       color: C.dim2,
       marginBottom: 20,
       lineHeight: 1.6
@@ -9404,7 +9528,7 @@ Only output the JSON. No markdown.`;
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 9,
+      fontSize: 12,
       fontWeight: 700,
       color: C.dim,
       flexShrink: 0
@@ -9434,7 +9558,7 @@ Only output the JSON. No markdown.`;
       ...pill(true),
       flex: 1,
       padding: "12px 0",
-      fontSize: 13
+      fontSize: 16
     }
   }, "LET ME IN \u2192"))))),
   resetModal > 0 && /*#__PURE__*/React.createElement("div",{
@@ -9447,28 +9571,28 @@ Only output the JSON. No markdown.`;
   },
     resetModal===1 && /*#__PURE__*/React.createElement("div",null,
       /*#__PURE__*/React.createElement("div",{style:{fontSize:15,fontWeight:800,color:C.white,marginBottom:8}},"Reset all data?"),
-      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:C.dim,marginBottom:6,lineHeight:1.6}},"This will permanently delete:"),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:14,color:C.dim,marginBottom:6,lineHeight:1.6}},"This will permanently delete:"),
       /*#__PURE__*/React.createElement("div",{style:{marginBottom:16}},
-        /*#__PURE__*/React.createElement("div",{key:0,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• All pantry items and stock"),
-        /*#__PURE__*/React.createElement("div",{key:1,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• All saved dishes"),
-        /*#__PURE__*/React.createElement("div",{key:2,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• Weekly menu and recipes"),
-        /*#__PURE__*/React.createElement("div",{key:3,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• Confirmed and locked days"),
-        /*#__PURE__*/React.createElement("div",{key:4,style:{fontSize:11,color:C.dim2,lineHeight:1.8}},"• Loaded cuisine packs")
+        /*#__PURE__*/React.createElement("div",{key:0,style:{fontSize:14,color:C.dim2,lineHeight:1.8}},"• All pantry items and stock"),
+        /*#__PURE__*/React.createElement("div",{key:1,style:{fontSize:14,color:C.dim2,lineHeight:1.8}},"• All saved dishes"),
+        /*#__PURE__*/React.createElement("div",{key:2,style:{fontSize:14,color:C.dim2,lineHeight:1.8}},"• Weekly menu and recipes"),
+        /*#__PURE__*/React.createElement("div",{key:3,style:{fontSize:14,color:C.dim2,lineHeight:1.8}},"• Confirmed and locked days"),
+        /*#__PURE__*/React.createElement("div",{key:4,style:{fontSize:14,color:C.dim2,lineHeight:1.8}},"• Loaded cuisine packs")
       ),
-      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:C.dim,marginBottom:20,lineHeight:1.5}},"Your API key, theme and preferences are kept."),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:14,color:C.dim,marginBottom:20,lineHeight:1.5}},"Your API key, theme and preferences are kept."),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8}},
         /*#__PURE__*/React.createElement("button",{onClick:function(){setResetModal(0);},
           style:{flex:1,background:"transparent",border:"1px solid "+C.border2,color:C.dim,
-            borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:600}},"CANCEL"),
+            borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:600}},"CANCEL"),
         /*#__PURE__*/React.createElement("button",{onClick:function(){haptic("medium");setResetModal(2);},
           style:{flex:1,background:C.bg,border:"1px solid "+C.border2,color:C.white,
-            borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:700}},
+            borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:700}},
           "CONTINUE →")
       )
     ),
     resetModal===2 && /*#__PURE__*/React.createElement("div",null,
       /*#__PURE__*/React.createElement("div",{style:{fontSize:15,fontWeight:800,color:"#ff4444",marginBottom:8}},"Are you absolutely sure?"),
-      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:C.dim,marginBottom:20,lineHeight:1.6}},"There is no undo. All your pantry data, dishes and menus will be gone. Export a backup first if you want to restore later."),
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:14,color:C.dim,marginBottom:20,lineHeight:1.6}},"There is no undo. All your pantry data, dishes and menus will be gone. Export a backup first if you want to restore later."),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){
@@ -9486,7 +9610,7 @@ Only output the JSON. No markdown.`;
         },"YES, RESET EVERYTHING"),
         /*#__PURE__*/React.createElement("button",{onClick:function(){setResetModal(0);},
           style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
-            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:600}},"CANCEL")
+            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:600}},"CANCEL")
       )
     )
   )),
@@ -9509,7 +9633,7 @@ Only output the JSON. No markdown.`;
           /*#__PURE__*/React.createElement("button",{
             onClick:function(){setCuisineModal(null);},
             style:{background:C.bg,border:"1px solid "+C.border2,color:C.white,
-              borderRadius:6,padding:"9px 20px",cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:600}
+              borderRadius:6,padding:"9px 20px",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:600}
           },"CLOSE")
         ));
       }
@@ -9522,8 +9646,8 @@ Only output the JSON. No markdown.`;
         style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
           padding:20,width:"100%",maxWidth:380}
       },
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white,marginBottom:4}},"Add a Cuisine Pack"),
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:C.dim,marginBottom:16}},"Tap a cuisine to load its items and dishes."),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:16,fontWeight:700,color:C.white,marginBottom:4}},"Add a Cuisine Pack"),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:C.dim,marginBottom:16}},"Tap a cuisine to load its items and dishes."),
         /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}},
           unloaded.map(function(key){
             var preset = CUISINE_PRESETS[key];
@@ -9534,7 +9658,7 @@ Only output the JSON. No markdown.`;
                 setCuisineModal({key:key,mode:"add"});
                 setCuisineModalSel({items:true,dishes:true,ai:true});
               },
-              style:Object.assign({},pill(false),{padding:"7px 12px",fontSize:10})
+              style:Object.assign({},pill(false),{padding:"7px 12px",fontSize:13})
             }, preset.label);
           })
         ),
@@ -9542,7 +9666,7 @@ Only output the JSON. No markdown.`;
           onClick:function(){setCuisineModal(null);},
           style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
             borderRadius:6,padding:"9px 0",width:"100%",cursor:"pointer",
-            fontFamily:C.font,fontSize:10,fontWeight:600}
+            fontFamily:C.font,fontSize:13,fontWeight:600}
         },"CANCEL")
       ));
     }
@@ -9612,10 +9736,10 @@ Only output the JSON. No markdown.`;
       style:{background:C.card,border:"1px solid "+C.border2,borderRadius:10,
         padding:20,width:"100%",maxWidth:380}
     },
-      /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.white,marginBottom:4}},
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:16,fontWeight:700,color:C.white,marginBottom:4}},
         isAdd ? "Add "+preset.label : "Remove "+preset.label
       ),
-      /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:C.dim,marginBottom:16,lineHeight:1.5}},
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:C.dim,marginBottom:16,lineHeight:1.5}},
         isAdd ? "Select what to load:" : "Select what to remove:"
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8,marginBottom:20}},
@@ -9639,8 +9763,8 @@ Only output the JSON. No markdown.`;
               }})
             ),
             /*#__PURE__*/React.createElement("div",null,
-              /*#__PURE__*/React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.white,lineHeight:1.2}},opt.label),
-              /*#__PURE__*/React.createElement("div",{style:{fontSize:9,color:C.dim,marginTop:2}},opt.desc)
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,lineHeight:1.2}},opt.label),
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:2}},opt.desc)
             )
           );
         })
@@ -9649,14 +9773,14 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){setCuisineModal(null);},
           style:{flex:1,background:"transparent",border:"1px solid "+C.border2,color:C.dim,
-            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:10,fontWeight:600}
+            borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:13,fontWeight:600}
         },"CANCEL"),
         /*#__PURE__*/React.createElement("button",{
           onClick:applySelections,
           disabled:!cuisineModalSel.items&&!cuisineModalSel.dishes&&!cuisineModalSel.ai,
           style:{flex:2,background:C.white,border:"none",color:C.bg,
             borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,
-            fontSize:11,fontWeight:700,
+            fontSize:14,fontWeight:700,
             opacity:(!cuisineModalSel.items&&!cuisineModalSel.dishes&&!cuisineModalSel.ai)?0.4:1}
         }, isAdd ? "ADD" : "REMOVE")
       )
@@ -9668,7 +9792,7 @@ Only output the JSON. No markdown.`;
       position:"fixed",bottom:"calc(env(safe-area-inset-bottom)+80px)",
       left:"50%",transform:"translateX(-50%)",
       background:toast.type==="success"?"#166534":toast.type==="error"?"#7f1d1d":"#1e293b",
-      color:"#fff",borderRadius:8,padding:"10px 18px",fontSize:11,fontWeight:600,
+      color:"#fff",borderRadius:8,padding:"10px 18px",fontSize:14,fontWeight:600,
       zIndex:999,pointerEvents:"none",whiteSpace:"nowrap",
       boxShadow:"0 4px 20px rgba(0,0,0,0.4)"
     }
@@ -9681,8 +9805,8 @@ Only output the JSON. No markdown.`;
     onClick: e => e.stopPropagation(),
     style: {background:C.card,borderRadius:12,padding:16,width:"100%",maxWidth:480,maxHeight:"80vh",overflowY:"auto"}
   },
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:11,fontWeight:700,color:C.white,marginBottom:2}}, "Set AI Slots"),
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:9,color:C.dim,marginBottom:12}}, "Toggle cells = AI-invented. Blank = from your dish inventory."),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:2}}, "Set AI Slots"),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim,marginBottom:12}}, "Toggle cells = AI-invented. Blank = from your dish inventory."),
     (function() {
       var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
       var todayIdx=new Date().getDay();
@@ -9692,14 +9816,14 @@ Only output the JSON. No markdown.`;
       var headerCells=[/*#__PURE__*/React.createElement("div",{key:"lbl",style:{width:64,flexShrink:0}})];
       days.forEach(function(d){
         headerCells.push(/*#__PURE__*/React.createElement("div",{
-          key:d,style:{flex:1,textAlign:"center",fontSize:8,color:C.dim,fontWeight:700,letterSpacing:0.5,minWidth:36}
+          key:d,style:{flex:1,textAlign:"center",fontSize:11,color:C.dim,fontWeight:700,letterSpacing:0.5,minWidth:36}
         }, abbr[d]||d.slice(0,3).toUpperCase()));
       });
       // Data rows
       var rows=[/*#__PURE__*/React.createElement("div",{key:"hdr",style:{display:"flex",gap:4,marginBottom:4}}, headerCells)];
       mealCats.forEach(function(mc){
         var cells=[/*#__PURE__*/React.createElement("div",{key:"mc",
-          style:{width:64,flexShrink:0,fontSize:9,color:C.dim,fontWeight:600,display:"flex",alignItems:"center"}
+          style:{width:64,flexShrink:0,fontSize:12,color:C.dim,fontWeight:600,display:"flex",alignItems:"center"}
         }, mc)];
         days.forEach(function(d){
           var key=d+"|"+mc;
@@ -9710,7 +9834,7 @@ Only output the JSON. No markdown.`;
             style:{
               flex:1,minWidth:36,height:32,borderRadius:4,border:"1px solid "+(on?C.white:C.border2),
               background:on?C.white:"transparent",color:on?C.bg:C.dim2,
-              cursor:"pointer",fontFamily:C.font,fontSize:8,fontWeight:700,
+              cursor:"pointer",fontFamily:C.font,fontSize:11,fontWeight:700,
               display:"flex",alignItems:"center",justifyContent:"center"
             }
           }, on?"AI":""));
@@ -9728,26 +9852,43 @@ Only output the JSON. No markdown.`;
             allKeys.forEach(function(k){n[k]=true;});
             return n;
           });},
-          style:{...pill(true),fontSize:9,padding:"4px 12px"}
+          style:{...pill(true),fontSize:12,padding:"4px 12px"}
         }, "SELECT ALL"),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){setAiSlotSel({});},
-          style:{...pill(false),fontSize:9,padding:"4px 12px"}
+          style:{...pill(false),fontSize:12,padding:"4px 12px"}
         }, "CLEAR ALL")
       ));
       return rows;
     })(),
     /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:8,marginTop:14}},
-      /*#__PURE__*/React.createElement("button", {onClick:()=>setAiSlotPopup(false),style:{...pill(false),flex:1,padding:"9px 0",fontSize:10}}, "CANCEL"),
+      /*#__PURE__*/React.createElement("button", {onClick:()=>setAiSlotPopup(false),style:{...pill(false),flex:1,padding:"9px 0",fontSize:13}}, "CANCEL"),
       /*#__PURE__*/React.createElement("button", {
         onClick:function(){setAiSlotPopup(false);generateMenu();},
-        style:{...pill(true),flex:1,padding:"9px 0",fontSize:10}
+        style:{...pill(true),flex:1,padding:"9px 0",fontSize:13}
       }, "GENERATE")
     )
   ))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
