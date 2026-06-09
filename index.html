@@ -423,6 +423,197 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ── Screensaver ──────────────────────────────────────────────────────────────
+function initScreensaver() {
+  var IDLE_MS = 15 * 60 * 1000; // 15 minutes
+  var FONT = "'Geist','Inter','DM Sans',system-ui,sans-serif";
+
+  function getPhase() {
+    var h = new Date().getHours();
+    if (h >= 6  && h < 12) return "morning";
+    if (h >= 12 && h < 17) return "midday";
+    if (h >= 17 && h < 21) return "evening";
+    return "night";
+  }
+
+  var PHASES = {
+    morning: { grad:"#f2c4a0,#e8a882,#f5d4b8,#d4906a", text:"rgba(60,28,12,0.92)", sub:"rgba(60,28,12,0.45)", glow:"rgba(210,140,80,0.30)", accent:"rgba(60,28,12,0.18)" },
+    midday:  { grad:"#c8b882,#a89860,#d4c894,#b8a070", text:"rgba(38,28,10,0.92)", sub:"rgba(38,28,10,0.45)", glow:"rgba(180,160,80,0.28)", accent:"rgba(38,28,10,0.18)" },
+    evening: { grad:"#c8824a,#a85e30,#d49460,#8c4820", text:"rgba(44,16,4,0.94)",  sub:"rgba(44,16,4,0.45)",  glow:"rgba(180,90,30,0.38)", accent:"rgba(44,16,4,0.18)" },
+    night:   { grad:"#1a1208,#2a1a10,#160e18,#1e1408", text:"rgba(242,237,232,0.92)", sub:"rgba(242,237,232,0.42)", glow:"rgba(180,140,80,0.22)", accent:"rgba(242,237,232,0.15)" }
+  };
+
+  var style = document.createElement("style");
+  style.textContent = [
+    "@keyframes ss-hue{0%,100%{filter:hue-rotate(0deg) brightness(1)}50%{filter:hue-rotate(20deg) brightness(1.06)}}",
+    "@keyframes ss-fadein{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}",
+    "@keyframes ss-fadein2{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}",
+    "@keyframes ss-pulse{0%,100%{opacity:0.88}50%{opacity:1}}",
+    // Overlay
+    "#ss-overlay{position:fixed;inset:0;z-index:9999;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 1.5s ease;overflow:hidden;background-size:300% 300%}",
+    "#ss-overlay.ss-visible{opacity:1;pointer-events:all}",
+    "#ss-overlay.ss-hiding{opacity:0;pointer-events:none;transition:opacity 0.5s ease}",
+    // Noise grain
+    "#ss-noise{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0.035;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.05) 2px,rgba(255,255,255,0.05) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 6px)}",
+    // Vignette
+    "#ss-vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 70% 40%,transparent 15%,rgba(0,0,0,0.50) 100%)}",
+    // Top-right: naked text, no box
+    "#ss-tr{position:absolute;top:48px;right:52px;z-index:4;text-align:right;font-family:var(--ss-font)}",
+    "#ss-date{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;opacity:0;margin-bottom:10px}",
+    "#ss-time{font-size:112px;font-weight:800;letter-spacing:-7px;line-height:0.95;opacity:0}",
+    "#ss-tr.ss-in #ss-date{animation:ss-fadein 0.7s cubic-bezier(0.16,1,0.3,1) forwards}",
+    "#ss-tr.ss-in #ss-time{animation:ss-fadein 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s forwards}",
+    // Bottom menu — floating, no box, no background
+    "#ss-menu{position:absolute;bottom:52px;left:52px;right:52px;z-index:4;display:flex;gap:0;opacity:0}",
+    "#ss-menu.ss-in{animation:ss-fadein2 0.7s cubic-bezier(0.16,1,0.3,1) 0.22s forwards}",
+    "#ss-menu .ss-mc{flex:1;padding-left:16px;margin-right:32px;border-left:1.5px solid currentColor}",
+    "#ss-menu .ss-mc:last-child{margin-right:0}",
+    "#ss-menu .ss-mc-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:7px;opacity:0.42}",
+    "#ss-menu .ss-mc-dish{font-size:16px;font-weight:700;letter-spacing:-0.3px;line-height:1.25;opacity:0.88}",
+    "#ss-menu .ss-mc-empty{font-size:15px;opacity:0.25;font-style:italic;font-weight:400}"
+  ].join("\n");
+  document.head.appendChild(style);
+
+  // DOM — no glass panels
+  var overlay  = document.createElement("div"); overlay.id = "ss-overlay";
+  var noise    = document.createElement("div"); noise.id   = "ss-noise";
+  var vignette = document.createElement("div"); vignette.id= "ss-vignette";
+
+  var tr     = document.createElement("div"); tr.id    = "ss-tr";
+  var dateEl = document.createElement("div"); dateEl.id = "ss-date";
+  var timeEl = document.createElement("div"); timeEl.id = "ss-time";
+  tr.appendChild(dateEl);
+  tr.appendChild(timeEl);
+
+  var menuEl = document.createElement("div"); menuEl.id = "ss-menu";
+
+  overlay.appendChild(noise);
+  overlay.appendChild(vignette);
+  overlay.appendChild(tr);
+  overlay.appendChild(menuEl);
+  document.body.appendChild(overlay);
+
+  function applyPhase() {
+    var p = PHASES[getPhase()];
+    overlay.style.background = "linear-gradient(135deg," + p.grad + ")";
+    overlay.style.animation  = "ss-hue 60s ease-in-out infinite";
+    tr.style.fontFamily      = FONT;
+    menuEl.style.fontFamily  = FONT;
+    timeEl.style.color       = p.text;
+    timeEl.style.textShadow  = "0 0 80px " + p.glow + ", 0 2px 20px " + p.glow;
+    dateEl.style.color       = p.sub;
+    // menu text colour via color: on parent (border-left uses currentColor)
+    menuEl.style.color       = p.text;
+    var labels = menuEl.querySelectorAll(".ss-mc-label,.ss-mc-dish,.ss-mc-empty");
+    for (var i=0; i<labels.length; i++) {
+      if (labels[i].className.indexOf("label") >= 0) labels[i].style.color = p.sub;
+      else labels[i].style.color = p.text;
+    }
+    // border-left uses currentColor — set on each mc
+    var mcs = menuEl.querySelectorAll(".ss-mc");
+    for (var j=0; j<mcs.length; j++) mcs[j].style.borderColor = p.accent;
+  }
+
+  function buildMenu() {
+    menuEl.innerHTML = "";
+    menuEl.classList.remove("ss-in");
+    var plan = window.__pantryOSMenu || {};
+    var cats = Object.keys(plan);
+    if (!cats.length) return;
+    var p = PHASES[getPhase()];
+    cats.forEach(function(mc) {
+      var dish = plan[mc];
+      var col = document.createElement("div"); col.className = "ss-mc";
+      col.style.borderColor = p.accent;
+      var lbl = document.createElement("div"); lbl.className = "ss-mc-label"; lbl.style.color = p.sub; lbl.textContent = mc;
+      col.appendChild(lbl);
+      var isDineOut = dish && dish.indexOf("Dine Out") >= 0;
+      var el = document.createElement("div");
+      if (dish && !isDineOut) {
+        el.className = "ss-mc-dish"; el.style.color = p.text; el.textContent = dish;
+      } else {
+        el.className = "ss-mc-empty"; el.style.color = p.sub;
+        el.textContent = isDineOut ? "Dining out" : "—";
+      }
+      col.appendChild(el);
+      menuEl.appendChild(col);
+    });
+    setTimeout(function(){ menuEl.classList.add("ss-in"); }, 50);
+  }
+
+  var clockInterval = null;
+  var DN = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var lastPhase = null;
+  var lastPhase = null;
+  function updateClock() {
+    var n = new Date(), h = n.getHours(), m = n.getMinutes();
+    timeEl.textContent = (h<10?"0"+h:h)+":"+(m<10?"0"+m:m);
+    dateEl.textContent = DN[n.getDay()].toUpperCase() + "  ·  " + MN[n.getMonth()].toUpperCase() + " " + n.getDate();
+    // Switch phase at the top of each hour
+    if (m === 0) { var p = getPhase(); if (p !== lastPhase) { lastPhase = p; applyPhase(); } }
+  }
+
+  var visible = false;
+  function show() {
+    if (visible) return;
+    visible = true;
+    lastPhase = getPhase();
+    applyPhase();
+    buildMenu();
+    updateClock();
+    tr.classList.remove("ss-in");
+    overlay.classList.remove("ss-hiding");
+    overlay.classList.add("ss-visible");
+    setTimeout(function(){ tr.classList.add("ss-in"); }, 80);
+    clockInterval = setInterval(updateClock, 1000);
+    if (m === 0) { var cp = getPhase(); if (cp !== lastPhase) { lastPhase = cp; applyPhase(); } }
+  }
+
+  function hide() {
+    if (!visible) return;
+    visible = false;
+    overlay.classList.add("ss-hiding");
+    overlay.classList.remove("ss-visible");
+    tr.classList.remove("ss-in");
+    menuEl.classList.remove("ss-in");
+    if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+    resetTimer();
+  }
+
+  var idleTimer = null;
+  function resetTimer() {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(show, IDLE_MS);
+  }
+
+  ["touchstart","mousedown","mousemove","scroll","keydown"].forEach(function(ev) {
+    document.addEventListener(ev, function(){ if (!visible) resetTimer(); }, { passive: true });
+  });
+  overlay.addEventListener("touchstart", hide, { passive: true });
+  overlay.addEventListener("mousedown", hide);
+  resetTimer();
+}
+
+
 window.addEventListener("load",function(){
 const {
   useState,
@@ -4041,206 +4232,141 @@ function DishTile({
 }
 
 function DayCard({
-  day,
-  dayMenu,
-  mealCats,
-  isToday,
-  isTomorrow,
-  isWeekend,
-  dayDate,
-  isMichelinWeekendOverride,
-  onRecipe,
-  recipes,
-  locked,
-  onToggleLock,
-  onSwap,
-  swapLoading,
-  onSaveDish,
-  dishes,
-  isConfirmed
+  day, dayMenu, mealCats, isToday, isTomorrow, isWeekend,
+  dayDate, isMichelinWeekendOverride,
+  onRecipe, recipes, locked, onToggleLock, onSwap, swapLoading,
+  onSaveDish, dishes, isConfirmed
 }) {
-  if (!dayMenu) return null; // skip days not in current plan
-  const isLightDC = C.bg==="#ebebeb"||C.bg==="#f0f0f0"; const isConf=arguments[0]&&arguments[0].isConfirmed; const borderCol = locked ? (isLightDC?"#b0b0b0":"#3a3a3a") : isToday ? (isLightDC?"#888":"#2e2e2e") : isTomorrow ? (isLightDC?"#aaa":"#252525") : isWeekend ? (isLightDC?"#999":"#2a2a2a") : (isLightDC?"#ccc":"#1c1c1c");
-  const labelCol = isToday ? C.white : isTomorrow ? C.dim : isWeekend ? C.white : C.dim;
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      border: "1px solid " + borderCol,
-      borderRadius: 12,
-      padding: "12px 14px",
-      opacity: 1,
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      marginBottom: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: labelCol,
-      letterSpacing: 1,
-      textTransform: "uppercase",
-      flex: 1
-    }
-  }, day), isToday && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      color: C.white,
-      borderRadius: 3,
-      padding: "2px 6px",
-      letterSpacing: 0.5,
-      fontWeight: 700
-    }
-  }, "TODAY"), isTomorrow && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      background: C.bg,
-      border: "1px solid " + C.border2,
-      color: C.white,
-      borderRadius: 3,
-      padding: "2px 6px",
-      letterSpacing: 0.5,
-      fontWeight: 700
-    }
-  }, "NEXT"), isWeekend && (isMichelinWeekendOverride===undefined?isMichelinWeekend:isMichelinWeekendOverride) && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      background: C.card,
-      color: C.white,
-      borderRadius: 3,
-      padding: "2px 6px",
-      letterSpacing: 0.5,
-      fontWeight: 700
-    }
-  }, "GOURMET"),  onToggleLock && dayMenu && /*#__PURE__*/React.createElement("button", {
-    onClick: onToggleLock,
-    style: {
-      background: locked ? C.white : "transparent",
-      border: "1px solid " + (locked ? C.border2 : C.border),
-      color: locked ? C.white : C.dim,
-      background: locked ? C.dim3 : "transparent",
-      borderRadius: 4,
-      padding: "2px 8px",
-      fontSize: 11,
-      cursor: "pointer",
-      fontFamily: C.font,
-      letterSpacing: 0.5,
-      fontWeight: 700,
-      flexShrink: 0
-    }
-  }, locked ? "🔒" : "🔓")), dayMenu ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 6
-    }
-  }, mealCats.map(mc => dayMenu && dayMenu[mc] && typeof dayMenu[mc] === "string" ? /*#__PURE__*/React.createElement("div", {
-    key: mc,
-    style: {
-      display: "flex",
-      gap: 8,
-      fontSize: 13,
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.dim,
-      minWidth: 66,
-      textTransform: "uppercase",
-      fontSize: 11,
-      flexShrink: 0
-    }
-  }, mc), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.white,
-      lineHeight: 1.4,
-      flex: 1
-    }
-  }, dayMenu[mc], dishes && dayMenu[mc] && !dishes.some(function (d) {
-    return d.name === dayMenu[mc];
-  }) && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 10,
-      fontWeight: 700,
-      letterSpacing: 0.5,
-      background: "rgba(255,255,255,0.12)",
-      color: C.white,
-      borderRadius: 3,
-      padding: "1px 5px",
-      marginLeft: 5,
-      verticalAlign: "middle",
-      display: "inline-block"
-    }
-  }, "AI"), ), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4,
-      flexShrink: 0
-    }
-  }, onSwap && !locked && /*#__PURE__*/React.createElement("button", {
-    onClick: swapLoading ? undefined : () => onSwap(day, mc, dayMenu[mc]),
-    disabled: !!swapLoading,
-    style: {
-      background: "transparent",
-      border: "1px solid " + (swapLoading ? C.border2 : C.border),
-      color: swapLoading ? C.dim2 : C.dim,
-      borderRadius: 4,
-      padding: "2px 6px",
-      fontSize: 11,
-      cursor: swapLoading ? "default" : "pointer",
-      fontFamily: C.font,
-      letterSpacing: 0.5,
-      opacity: swapLoading ? 0.5 : 1,
-      fontWeight: 600
-    }
-  }, "\u21BA"), onSaveDish && (() => {
-    var already = onSaveDish.saved && onSaveDish.saved(dayMenu[mc]);
-    return /*#__PURE__*/React.createElement("button", {
-      onClick: () => !already && onSaveDish.save(dayMenu[mc], mc),
-      style: {
-        background: already ? C.card : "transparent",
-        border: "1px solid " + (already ? C.border2 : C.border),
-        color: already ? C.dim : C.dim,
-        borderRadius: 4,
-        padding: "2px 6px",
-        fontSize: 11,
-        cursor: already ? "default" : "pointer",
-        fontFamily: C.font,
-        letterSpacing: 0.5,
-        fontWeight: 600,
-        opacity: already ? 0.5 : 1
-      }
-    }, already ? "✓" : "+ SAVE");
-  })(), onRecipe && /*#__PURE__*/React.createElement("button", {
-    onClick: () => onRecipe(dayMenu[mc], mc),
-    style: {
-      background: recipes && recipes[dayMenu[mc]] ? C.card : "transparent",
-      border: "1px solid " + (recipes && recipes[dayMenu[mc]] ? C.border2 : C.border),
-      color: recipes && recipes[dayMenu[mc]] ? C.white : C.dim,
-      borderRadius: 4,
-      padding: "2px 7px",
-      fontSize: 11,
-      cursor: "pointer",
-      fontFamily: C.font,
-      letterSpacing: 0.5,
-      whiteSpace: "nowrap",
-      fontWeight: 600
-    }
-  }, recipes && recipes[dayMenu[mc]] ? "View Recipe" : "GET RECIPE"))) : null)) : /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: C.dim2,
-      fontSize: 13
-    }
-  }, "\u2014")
+  if (!dayMenu) return null;
+  const isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
+  const AMBER = "#b8935a";
+  const cardStyle = {
+    background: C.card,
+    borderRadius: 16,
+    boxShadow: isLight ? "0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)" : "0 2px 16px rgba(0,0,0,0.4)",
+    border: "none",
+    borderLeft: "3px solid " + AMBER,
+    padding: "14px 16px",
+    position: "relative",
+    minHeight: 120
+  };
+
+  const badge = isToday ? "TODAY" : isTomorrow ? "TOMORROW" : null;
+  const isAiDish = (name) => dishes && name && !dishes.some(d => d.name === name);
+
+  return /*#__PURE__*/React.createElement("div", { style: cardStyle },
+    // Header row
+    /*#__PURE__*/React.createElement("div", {
+      style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }
+    },
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "baseline", gap: 8 } },
+        /*#__PURE__*/React.createElement("span", {
+          style: { fontSize: 14, fontWeight: 700, color: C.white, letterSpacing: 0.5, textTransform: "uppercase" }
+        }, day),
+        dayDate && /*#__PURE__*/React.createElement("span", {
+          style: { fontSize: 12, color: C.dim, fontWeight: 400 }
+        }, dayDate)
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+        badge && /*#__PURE__*/React.createElement("span", {
+          style: {
+            fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
+            color: isToday ? AMBER : C.dim,
+            background: isToday ? (isLight ? "rgba(184,147,90,0.10)" : "rgba(200,169,110,0.12)") : "transparent",
+            borderRadius: 4, padding: isToday ? "2px 8px" : "0"
+          }
+        }, badge),
+        onToggleLock && dayMenu && /*#__PURE__*/React.createElement("button", {
+          onClick: onToggleLock,
+          style: {
+            background: locked ? C.dim3 : "transparent",
+            border: "1px solid " + (locked ? C.border2 : C.border),
+            color: locked ? C.white : C.dim,
+            borderRadius: 4, padding: "2px 8px", fontSize: 12,
+            cursor: "pointer", fontFamily: C.font, letterSpacing: 0.5, fontWeight: 700, flexShrink: 0
+          }
+        }, locked ? "🔒" : "🔓")
+      )
+    ),
+    // Meal rows
+    dayMenu ? /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 0 } },
+      mealCats.map((mc, idx) => {
+        if (!dayMenu[mc] || typeof dayMenu[mc] !== "string") return null;
+        const dishName = dayMenu[mc];
+        const isDineOut = dishName && dishName.indexOf("Dine Out") >= 0;
+        const isAI = !isDineOut && isAiDish(dishName);
+        const alreadySaved = onSaveDish && onSaveDish.saved && onSaveDish.saved(dishName);
+        const hasRecipe = recipes && recipes[dishName];
+        const isLast = idx === mealCats.filter(m => dayMenu[m] && typeof dayMenu[m] === "string").length - 1;
+        return /*#__PURE__*/React.createElement("div", {
+          key: mc,
+          style: {
+            paddingTop: 9, paddingBottom: 9,
+            borderBottom: isLast ? "none" : "1px solid " + (isLight ? "#f2ede8" : C.dim3)
+          }
+        },
+          // Meta row: category + AI tag + Save button
+          /*#__PURE__*/React.createElement("div", {
+            style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }
+          },
+            /*#__PURE__*/React.createElement("span", {
+              style: { fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: isLight ? "#c9b99a" : C.dim }
+            }, mc),
+            isAI && /*#__PURE__*/React.createElement("span", {
+              style: {
+                fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+                background: isLight ? "rgba(184,147,90,0.15)" : "rgba(200,169,110,0.18)",
+                color: AMBER, borderRadius: 3, padding: "1px 5px"
+              }
+            }, "AI"),
+            isAI && !alreadySaved && onSaveDish && /*#__PURE__*/React.createElement("button", {
+              onClick: () => onSaveDish.save(dishName, mc),
+              style: {
+                background: "transparent", border: "1px solid " + (isLight ? "rgba(184,147,90,0.4)" : "rgba(200,169,110,0.35)"),
+                color: AMBER, borderRadius: 3, padding: "1px 7px", fontSize: 10,
+                cursor: "pointer", fontFamily: C.font, fontWeight: 700, letterSpacing: 0.3
+              }
+            }, "+ Save")
+          ),
+          // Dish name row + actions
+          /*#__PURE__*/React.createElement("div", {
+            style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }
+          },
+            /*#__PURE__*/React.createElement("span", {
+              style: { fontSize: 15, fontWeight: 600, color: C.white, lineHeight: 1.35, flex: 1 }
+            }, dishName),
+            /*#__PURE__*/React.createElement("div", {
+              style: { display: "flex", alignItems: "center", gap: 8, flexShrink: 0, paddingTop: 1 }
+            },
+              onSwap && !locked && /*#__PURE__*/React.createElement("button", {
+                onClick: swapLoading ? undefined : () => onSwap(day, mc, dishName),
+                disabled: !!swapLoading,
+                style: {
+                  background: "transparent", border: "none", color: C.dim,
+                  fontSize: 16, cursor: swapLoading ? "default" : "pointer",
+                  padding: 0, lineHeight: 1, opacity: swapLoading ? 0.4 : 0.7,
+                  fontFamily: C.font
+                }
+              }, "↺"),
+              onRecipe && /*#__PURE__*/React.createElement("button", {
+                onClick: () => onRecipe(dishName, mc),
+                style: {
+                  background: "transparent", border: "none",
+                  color: hasRecipe ? AMBER : C.dim,
+                  fontSize: 12, fontWeight: hasRecipe ? 700 : 500,
+                  cursor: "pointer", padding: 0, fontFamily: C.font,
+                  textDecoration: "underline", textDecorationColor: "transparent",
+                  opacity: hasRecipe ? 1 : 0.65
+                }
+              }, hasRecipe ? "Recipe" : "Recipe")
+            )
+          )
+        );
+      })
+    ) : /*#__PURE__*/React.createElement("div", { style: { color: C.dim2, fontSize: 14 } }, "—")
   );
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  BACKUP PANEL
@@ -4453,6 +4579,184 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+function DayCardCarousel({
+  today, tomorrow, menu, nextMenu, mealCats, WEEKEND,
+  lockedDays, swapLoading, confirmedDays, dishes, recipes,
+  fetchRecipe, setSwapModal, setDishes, haptic, C
+}) {
+  // ── Swipeable Day Card Carousel ──
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragStart = React.useRef(null);
+
+  const hasTomorrow = !!(nextMenu ? nextMenu?.plan?.[tomorrow.name] : menu?.plan?.[tomorrow.name]);
+  const hasToday = !!(menu?.plan?.[today.name]);
+  const cards = [
+    hasToday ? "today" : null,
+    hasTomorrow ? "tomorrow" : null
+  ].filter(Boolean);
+  const totalCards = cards.length;
+
+  if (!hasToday && !hasTomorrow) return /*#__PURE__*/React.createElement("div", {
+    style: { color: C.dim, fontSize: 14, marginBottom: 16, padding: 14,
+      background: C.card, borderRadius: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }
+  }, "No menu yet. Go to Weekly Menu tab to generate.");
+
+  const THRESHOLD = 50;
+  const RUBBER = 0.25;
+
+  function startDrag(clientX) {
+    dragStart.current = clientX;
+    setDragging(true);
+    setDragX(0);
+  }
+  function moveDrag(clientX) {
+    if (dragStart.current === null) return;
+    let dx = clientX - dragStart.current;
+    // rubber-band at edges
+    if ((carouselIdx === 0 && dx > 0) || (carouselIdx === totalCards - 1 && dx < 0)) {
+      dx = dx * RUBBER;
+    }
+    setDragX(dx);
+  }
+  function endDrag() {
+    if (dragStart.current === null) return;
+    dragStart.current = null;
+    setDragging(false);
+    if (Math.abs(dragX) > THRESHOLD) {
+      if (dragX < 0 && carouselIdx < totalCards - 1) setCarouselIdx(carouselIdx + 1);
+      if (dragX > 0 && carouselIdx > 0) setCarouselIdx(carouselIdx - 1);
+    }
+    setDragX(0);
+  }
+
+  const saveDishFn = (mc) => ({
+    saved: name => dishes.some(d => d.name === name),
+    save: (name, mealCat) => {
+      haptic("light");
+      setDishes(p => [...p, { id: Date.now(), name, mealCats: [mealCat], ingredients: [],
+        mustInclude: false, mustIncludeIngredient: "", timesPerWeek: 0,
+        pairWith: [], makesLeftovers: false, leftoverMeal: "", leftoverSlot: "" }]);
+    }
+  });
+
+  const AMBER = "#b8935a";
+  const isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
+
+  return /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
+    // Carousel viewport
+    /*#__PURE__*/React.createElement("div", {
+      style: { overflow: "hidden", position: "relative", touchAction: "pan-y" },
+      onMouseDown: e => startDrag(e.clientX),
+      onMouseMove: e => { if (dragging) moveDrag(e.clientX); },
+      onMouseUp: endDrag,
+      onMouseLeave: endDrag,
+      onTouchStart: e => startDrag(e.touches[0].clientX),
+      onTouchMove: e => moveDrag(e.touches[0].clientX),
+      onTouchEnd: endDrag
+    },
+      /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          transform: "translateX(calc(" + (-carouselIdx * 100) + "% + " + dragX + "px))",
+          transition: dragging ? "none" : "transform 0.32s cubic-bezier(0.25,1,0.5,1)",
+          willChange: "transform"
+        }
+      },
+        // TODAY card
+        hasToday && /*#__PURE__*/React.createElement("div", {
+          style: { minWidth: "100%", userSelect: "none" }
+        },
+          // Nav label row — ABOVE the card, no overlap
+          /*#__PURE__*/React.createElement("div", {
+            style: { display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6, minHeight: 18 }
+          },
+            hasTomorrow && carouselIdx === 0 && /*#__PURE__*/React.createElement("button", {
+              onClick: () => setCarouselIdx(1),
+              style: {
+                background: "transparent", border: "none", padding: 0,
+                fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                color: AMBER, textTransform: "uppercase", cursor: "pointer",
+                fontFamily: C.font, opacity: 0.8
+              }
+            }, "Tomorrow →")
+          ),
+          /*#__PURE__*/React.createElement(DayCard, {
+            day: today.name,
+            dayMenu: menu && menu.plan ? menu.plan[today.name] : {},
+            dayDate: today.date,
+            mealCats: mealCats,
+            isToday: true,
+            isWeekend: WEEKEND.includes(today.name),
+            isMichelinWeekendOverride: false,
+            onRecipe: dishName => fetchRecipe(dishName),
+            recipes: recipes,
+            locked: !!lockedDays[today.name],
+            onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
+            swapLoading: swapLoading,
+            isConfirmed: !!(confirmedDays && confirmedDays[today.name]),
+            dishes: dishes,
+            onSaveDish: saveDishFn(today.name)
+          })
+        ),
+        // TOMORROW card
+        hasTomorrow && /*#__PURE__*/React.createElement("div", {
+          style: { minWidth: "100%", userSelect: "none" }
+        },
+          // Nav label row — ABOVE the card, no overlap
+          /*#__PURE__*/React.createElement("div", {
+            style: { display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: 6, minHeight: 18 }
+          },
+            carouselIdx === 1 && /*#__PURE__*/React.createElement("button", {
+              onClick: () => setCarouselIdx(0),
+              style: {
+                background: "transparent", border: "none", padding: 0,
+                fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                color: AMBER, textTransform: "uppercase", cursor: "pointer",
+                fontFamily: C.font, opacity: 0.8
+              }
+            }, "← Today")
+          ),
+          /*#__PURE__*/React.createElement(DayCard, {
+            day: tomorrow.name,
+            dayMenu: nextMenu ? (nextMenu.plan?.[tomorrow.name] || {}) : (menu && menu.plan ? menu.plan[tomorrow.name] : {}),
+            dayDate: tomorrow.date,
+            mealCats: mealCats,
+            isTomorrow: true,
+            isWeekend: WEEKEND.includes(tomorrow.name),
+            onRecipe: dishName => fetchRecipe(dishName),
+            recipes: recipes,
+            locked: !!lockedDays[tomorrow.name],
+            onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
+            swapLoading: swapLoading,
+            isConfirmed: !!(confirmedDays && confirmedDays[tomorrow.name]),
+            dishes: dishes,
+            onSaveDish: saveDishFn(tomorrow.name)
+          })
+        )
+      )
+    ),
+    // Dot indicators
+    totalCards > 1 && /*#__PURE__*/React.createElement("div", {
+      style: { display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 10 }
+    },
+      cards.map((c, i) => /*#__PURE__*/React.createElement("div", {
+        key: i,
+        onClick: () => setCarouselIdx(i),
+        style: {
+          height: 6,
+          width: i === carouselIdx ? 20 : 6,
+          borderRadius: 3,
+          background: i === carouselIdx ? AMBER : (isLight ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.25)"),
+          transition: "all 0.25s ease",
+          cursor: "pointer"
+        }
+      }))
+    )
+  );
+}
+
 function App() {
   // Tab order: summary, menu, pantry, dishes
   const [tab, setTab] = useState("summary");
@@ -4737,6 +5041,12 @@ function App() {
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.dietary, JSON.stringify(dietary));
   }, [dietary, loaded]);
+  // Expose today's menu plan to screensaver via window
+  useEffect(() => {
+    if (!menu || !menu.plan) { window.__pantryOSMenu = {}; return; }
+    var todayName = (function(){ var d=new Date(); return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()]; })();
+    window.__pantryOSMenu = menu.plan[todayName] || {};
+  }, [menu]);
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.macros, JSON.stringify(macros));
   }, [macros, loaded]);
@@ -6895,115 +7205,21 @@ Only output the JSON. No markdown.`;
     style: {
       padding: "12px 10px 80px"
     }
-  }, menu?.plan?.[today.name] && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.dim,
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 6
-    }
-  }, "\u25CF TODAY \u2014 ", today.name.toUpperCase(), " ", today.date), /*#__PURE__*/React.createElement(DayCard, {
-    day: today.name,
-    dayMenu: menu&&menu.plan?menu.plan[today.name]:{},
-    mealCats: mealCats,
-    isToday: true,
-    isWeekend: WEEKEND.includes(today.name),
-    isMichelinWeekendOverride: false,
-    onRecipe: dishName => fetchRecipe(dishName),
-    recipes: recipes,
-    locked: !!lockedDays[today.name],
-    onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
-    swapLoading: swapLoading,
-    isConfirmed: !!(confirmedDays&&confirmedDays[today.name]),
-    dishes: dishes,
-    onSaveDish: {
-      saved: name => dishes.some(d => d.name === name),
-      save: (name, mc) => {
-        haptic("light");
-        setDishes(p => [...p, {
-          id: Date.now(),
-          name,
-          mealCats: [mc],
-          ingredients: [],
-          mustInclude: false,
-          mustIncludeIngredient: "",
-          timesPerWeek: 0,
-          pairWith: [],
-          makesLeftovers: false,
-          leftoverMeal: "",
-          leftoverSlot: ""
-        }]);
-      }
-    }
-  })), !menu && /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: C.dim,
-      fontSize: 14,
-      marginBottom: 16,
-      padding: 14,
-      background: C.card,
-      borderRadius: 8,
-      border: `1px solid ${C.border}`
-    }
-  }, "No menu yet. Go to Weekly Menu tab to generate."), (nextMenu ? nextMenu?.plan?.[tomorrow.name] : menu?.plan?.[tomorrow.name]) && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.dim,
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 6
-    }
-  }, "\u25B6 TOMORROW \u2014 ", tomorrow.name.toUpperCase(), " ", tomorrow.date), /*#__PURE__*/React.createElement(DayCard, {
-    day: tomorrow.name,
-    dayMenu: nextMenu ? (nextMenu.plan?.[tomorrow.name]||{}) : (menu&&menu.plan?menu.plan[tomorrow.name]:{}) ,
-    mealCats: mealCats,
-    isTomorrow: true,
-    isWeekend: WEEKEND.includes(tomorrow.name),
-    onRecipe: dishName => fetchRecipe(dishName),
-    recipes: recipes,
-    locked: !!lockedDays[tomorrow.name],
-    onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
-    swapLoading: swapLoading,
-    isConfirmed: !!(confirmedDays&&confirmedDays[tomorrow.name]),
-    dishes: dishes,
-    onSaveDish: {
-      saved: name => dishes.some(d => d.name === name),
-      save: (name, mc) => {
-        haptic("light");
-        setDishes(p => [...p, {
-          id: Date.now(),
-          name,
-          mealCats: [mc],
-          ingredients: [],
-          mustInclude: false,
-          mustIncludeIngredient: "",
-          timesPerWeek: 0,
-          pairWith: [],
-          makesLeftovers: false,
-          leftoverMeal: "",
-          leftoverSlot: ""
-        }]);
-      }
-    }
-  })), menu && menu.plan && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(DayCardCarousel, {
+    today: today, tomorrow: tomorrow, menu: menu, nextMenu: nextMenu,
+    mealCats: mealCats, WEEKEND: WEEKEND, lockedDays: lockedDays,
+    swapLoading: swapLoading, confirmedDays: confirmedDays,
+    dishes: dishes, recipes: recipes, fetchRecipe: fetchRecipe,
+    setSwapModal: setSwapModal, setDishes: setDishes,
+    haptic: haptic, C: C
+  }), menu && menu.plan && /*#__PURE__*/React.createElement("div", {
     style: {marginBottom:16}
   }, /*#__PURE__*/React.createElement("div", {
     style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
-      display:"flex",justifyContent:"space-between",alignItems:"center"}
+      display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"nowrap",whiteSpace:"nowrap"}
   },
     /*#__PURE__*/React.createElement("span", null, "THIS WEEK'S SHOPPING"),
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
-      /*#__PURE__*/React.createElement("span", {style:{fontSize:11,color:C.dim2,fontWeight:400}},
-        "tap to mark restocked"),
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){
           // Mark all missing shopping list items as stocked
@@ -7062,7 +7278,7 @@ Only output the JSON. No markdown.`;
           }
         },
         style:{fontSize:11,color:C.dim,background:"transparent",border:"1px solid "+C.border2,
-          borderRadius:3,padding:"2px 6px",cursor:"pointer",fontFamily:C.font,fontWeight:700}
+          borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:C.font,fontWeight:700,fontSize:11,letterSpacing:0.5,flexShrink:0}
       },"✓ ALL")
     )
   ),
@@ -9871,7 +10087,25 @@ Only output the JSON. No markdown.`;
   ))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
+  initScreensaver();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
