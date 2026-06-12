@@ -441,6 +441,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+
+
+
 // ── Screensaver ──────────────────────────────────────────────────────────────
 function initScreensaver() {
   var IDLE_MS = 15 * 60 * 1000; // 15 minutes
@@ -2976,13 +2980,14 @@ const SK = {
   apiCost: "pantryos-apicost",
   defaultAiSlots: "pantryos-defaultaislots",
   confirmedDays: "pantryos-confirmeddays",
-  lastAutoGen: "pantryos-lastautogen"
+  lastAutoGen: "pantryos-lastautogen",
+  satGenPromptWeek: "pantryos-satgenpromptweek"
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  VERSION & MIGRATION SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
-const CURRENT_VERSION = 6;
+const CURRENT_VERSION = 7;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
@@ -3165,6 +3170,24 @@ const MIGRATIONS = {
   5: function(data) {
     try{var oD=localStorage.getItem("pantryos-dietary");if(oD){var od=JSON.parse(oD);if(od&&od["Vegan"])localStorage.setItem("pantryos-cuisines",JSON.stringify(["vegan"]));}localStorage.removeItem("pantryos-dietary");}catch(e){}
     if(data.items&&Array.isArray(data.items)){var uN=new Set(data.items.map(function(i){return i.name.toLowerCase().trim();}));var now=Date.now();DEFAULT_ITEMS.forEach(function(di,idx){if(di.id>=2001&&!uN.has(di.name.toLowerCase().trim()))data.items.push(Object.assign({},di,{id:now+idx}));});}
+    return data;
+  },
+  // v6 → v7: add isStaple flag — items that are commonly used across many recipes
+  // (milk, eggs, onions, garlic, ginger, etc.) get isStaple=true even if their
+  // category is e.g. Dairy or Produce, so they also surface under "Staples".
+  6: function (data) {
+    if (data.items) {
+      var STAPLE_NAMES = new Set([
+        "milk","butter","ghee","curd","yogurt","eggs","egg",
+        "onions","onion","garlic","ginger","green chilli","green chillies",
+        "lemons","lemon","coriander leaves","curry leaves","tomatoes","tomato"
+      ]);
+      data.items = data.items.map(function(it){
+        if (typeof it.isStaple === "boolean") return it;
+        var isStaple = STAPLE_NAMES.has((it.name||"").toLowerCase().trim());
+        return Object.assign({}, it, { isStaple: isStaple });
+      });
+    }
     return data;
   }
 };
@@ -4231,11 +4254,60 @@ function DishTile({
   })));
 }
 
+// ── Compute pantry availability for a day's menu ──
+function computeDayPantryStatus(dayMenu, dishes, items, stock, aiDishIngredients) {
+  var STAPLE = new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
+  var pantryByName = {};
+  items.forEach(function(it){ pantryByName[it.name.toLowerCase().trim()] = it; });
+  function findPI(ing){
+    var k = String(ing).toLowerCase().trim();
+    if (pantryByName[k]) return pantryByName[k];
+    var kn = k.replace(/s$/,"");
+    if (pantryByName[kn]) return pantryByName[kn];
+    return items.find(function(it){ var n=it.name.toLowerCase().trim(); return n.includes(k)||k.includes(n); }) || null;
+  }
+  var seen = new Set(); // dedupe ingredient ids across multiple dishes
+  var total = 0, inStock = 0;
+  var missing = [];
+  Object.values(dayMenu || {}).forEach(function(dishName){
+    if (!dishName || dishName.indexOf("Dine Out") >= 0) return;
+    var dish = dishes.find(function(d){ return d.name === dishName; });
+    var isAI = !dish;
+    var rawIngs = dish ? (dish.ingredients||[]) : (aiDishIngredients[dishName]||[]);
+    rawIngs.forEach(function(ing){
+      var pi;
+      if (!isAI) {
+        var k = String(ing).toLowerCase().trim();
+        if (STAPLE.has(k)) return;
+        pi = pantryByName[k];
+      } else {
+        var ingId = Number(ing);
+        if (!isNaN(ingId) && ingId > 0) {
+          pi = items.find(function(it){ return it.id === ingId || it.id === ing; });
+        } else {
+          var k2 = String(ing).toLowerCase().trim();
+          if (STAPLE.has(k2)) return;
+          pi = findPI(ing);
+        }
+      }
+      if (!pi) return;
+      if (seen.has(pi.id)) return;
+      seen.add(pi.id);
+      total++;
+      var has = !!stock[pi.id] || !!stock[String(pi.id)];
+      if (has) inStock++;
+      else missing.push({ id: pi.id, name: pi.name });
+    });
+  });
+  return { total: total, inStock: inStock, missing: missing.sort(function(a,b){ return a.name.localeCompare(b.name); }) };
+}
+
 function DayCard({
   day, dayMenu, mealCats, isToday, isTomorrow, isWeekend,
   dayDate, isMichelinWeekendOverride,
   onRecipe, recipes, locked, onToggleLock, onSwap, swapLoading,
-  onSaveDish, dishes, isConfirmed
+  onSaveDish, dishes, isConfirmed,
+  items, stock, aiDishIngredients, setStock
 }) {
   if (!dayMenu) return null;
   const isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
@@ -4288,8 +4360,9 @@ function DayCard({
         }, locked ? "🔒" : "🔓")
       )
     ),
-    // Meal rows
-    dayMenu ? /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 0 } },
+    // Meal rows + pantry availability
+    dayMenu ? /*#__PURE__*/React.createElement(React.Fragment, null,
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 0 } },
       mealCats.map((mc, idx) => {
         if (!dayMenu[mc] || typeof dayMenu[mc] !== "string") return null;
         const dishName = dayMenu[mc];
@@ -4363,6 +4436,43 @@ function DayCard({
           )
         );
       })
+    ),
+    // Pantry availability bar
+    (() => {
+      var ps = computeDayPantryStatus(dayMenu, dishes, items||[], stock||{}, aiDishIngredients||{});
+      if (ps.total === 0) return null;
+      var pct = Math.round((ps.inStock / ps.total) * 100);
+      return /*#__PURE__*/React.createElement("div", { style: { marginTop: 10, paddingTop: 10, borderTop: "1px solid " + (isLight ? "#f2ede8" : C.dim3) } },
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 } },
+          /*#__PURE__*/React.createElement("span", { style: { fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: isLight ? "#c9b99a" : C.dim } }, "Pantry"),
+          /*#__PURE__*/React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: pct === 100 ? AMBER : C.dim } }, ps.inStock + "/" + ps.total + " in pantry")
+        ),
+        /*#__PURE__*/React.createElement("div", { style: { height: 4, borderRadius: 2, background: isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)", overflow: "hidden" } },
+          /*#__PURE__*/React.createElement("div", { style: { height: "100%", width: pct + "%", borderRadius: 2, background: AMBER, transition: "width 0.3s ease" } })
+        ),
+        ps.missing.length > 0 && /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 5, marginTop: 7 } },
+          ps.missing.map(function(m) {
+            return /*#__PURE__*/React.createElement("span", {
+              key: m.id,
+              onClick: function(){
+                if (!setStock) return;
+                setStock(function(prev){
+                  var n = Object.assign({}, prev);
+                  n[m.id] = true; n[String(m.id)] = true;
+                  return n;
+                });
+              },
+              style: {
+                fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 12,
+                background: isLight ? "rgba(184,147,90,0.10)" : "rgba(200,169,110,0.12)",
+                color: AMBER, cursor: setStock ? "pointer" : "default",
+                border: "1px solid " + (isLight ? "rgba(184,147,90,0.25)" : "rgba(200,169,110,0.22)")
+              }
+            }, m.name);
+          })
+        )
+      );
+    })()
     ) : /*#__PURE__*/React.createElement("div", { style: { color: C.dim2, fontSize: 14 } }, "—")
   );
 }
@@ -4582,7 +4692,8 @@ class ErrorBoundary extends React.Component {
 function DayCardCarousel({
   today, tomorrow, menu, nextMenu, mealCats, WEEKEND,
   lockedDays, swapLoading, confirmedDays, dishes, recipes,
-  fetchRecipe, setSwapModal, setDishes, haptic, C
+  fetchRecipe, setSwapModal, setDishes, haptic, C,
+  items, stock, aiDishIngredients, setStock
 }) {
   // ── Swipeable Day Card Carousel ──
   const [carouselIdx, setCarouselIdx] = useState(0);
@@ -4697,7 +4808,8 @@ function DayCardCarousel({
             swapLoading: swapLoading,
             isConfirmed: !!(confirmedDays && confirmedDays[today.name]),
             dishes: dishes,
-            onSaveDish: saveDishFn(today.name)
+            onSaveDish: saveDishFn(today.name),
+            items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock
           })
         ),
         // TOMORROW card
@@ -4732,7 +4844,8 @@ function DayCardCarousel({
             swapLoading: swapLoading,
             isConfirmed: !!(confirmedDays && confirmedDays[tomorrow.name]),
             dishes: dishes,
-            onSaveDish: saveDishFn(tomorrow.name)
+            onSaveDish: saveDishFn(tomorrow.name),
+            items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock
           })
         )
       )
@@ -4777,6 +4890,7 @@ function App() {
   const [summaryFilter, setSummaryFilter] = useState("all");
 
   // Modals
+  const [satGenPrompt, setSatGenPrompt] = useState(false);
   const [addItemModal, setAddItemModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("binary");
@@ -4937,16 +5051,14 @@ function App() {
   // ── Missed reset guard: if app reopens Sunday after 00:30 and nextMenu exists, promote immediately ──
   useEffect(() => {
     if (!loaded) return;
-    const now = new Date();
-    const isSunday = now.getDay() === 0;
-    const isPastResetTime = now.getHours() > 0 || now.getMinutes() >= 30;
-    if (!isSunday || !isPastResetTime) return;
-    // Check localStorage directly for nextMenu (state may not be set yet)
+    // Broadened: fires on ANY day if nextMenu exists and its weekKey matches
+    // the current week — covers app reopening Monday+ after a missed Sunday reset.
     try {
       var snm = localStorage.getItem(SK.nextMenu);
       if (!snm) return;
       var storedNextMenu = JSON.parse(snm);
       if (!storedNextMenu) return;
+      if (storedNextMenu.weekKey !== getWeekKey()) return; // not this week's plan — leave alone
       // Promote nextMenu → menu
       setMenu(storedNextMenu);
       localStorage.setItem(SK.menu, JSON.stringify(storedNextMenu));
@@ -4959,6 +5071,20 @@ function App() {
       showToast("New week's menu loaded", "success");
     } catch(e) {}
   }, [loaded]);
+
+  // ── Saturday auto-gen missed: prompt user on next open ──
+  useEffect(() => {
+    if (!loaded) return;
+    var today = new Date().getDay(); // 0=Sun..6=Sat
+    if (today === 6) return; // it's Saturday — normal auto-gen path handles it
+    if (nextMenu) return; // already have next week's plan
+    if (!apiKey || !dishes || dishes.length < 5) return;
+    if (!menu || menu.weekKey !== getWeekKey()) return; // no current-week menu to base this on
+    var wk = getWeekKey();
+    if (lastAutoGen === wk) return; // Saturday's auto-gen for this week already succeeded
+    if (localStorage.getItem(SK.satGenPromptWeek) === wk) return; // already asked this week
+    setSatGenPrompt(true);
+  }, [loaded, nextMenu, menu, apiKey, dishes, lastAutoGen]);
   useEffect(() => {
     if (loaded) localStorage.setItem(SK.items, JSON.stringify(items));
   }, [items, loaded]);
@@ -5194,7 +5320,7 @@ function App() {
   // Pantry groups (all items, no availability filter – pantry is just a list manager now)
   const pantryGroups = PANTRY_CATEGORIES.map(pc => ({
     ...pc,
-    items: items.filter(i => i.cat === pc.id)
+    items: items.filter(i => i.cat === pc.id || (pc.id === "staples" && i.isStaple && i.cat !== "staples"))
   })).filter(g => g.items.length > 0);
 
   // ── Generate Menu ──
@@ -5616,6 +5742,9 @@ function App() {
     if(isSaturday){
       // Saturday: store as NEXT week's menu — don't overwrite current week
       setNextMenu(newMenu);
+      // Stamp lastAutoGen so the "missed Saturday" popup doesn't fire on Sunday
+      // for menus generated manually (not just by the auto-scheduler)
+      setLastAutoGen(newMenu.weekKey);
       // Do NOT clear confirmedDays — current week's confirmed state must stay intact
     } else {
       setMenu(newMenu);
@@ -5897,10 +6026,20 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     var stockDesc=Object.entries(stockByCat).map(function(e){return e[0]+": "+e[1].join(", ");}).join("; ")||"various";
     var dietFlags=Object.keys(dietary||{}).filter(function(k){return dietary[k];});
     if(cuisines&&cuisines.includes("vegan")&&!dietFlags.includes("Vegan")) dietFlags=dietFlags.concat(["Vegan"]);
-    var prompt="Write a concise recipe for: "+dishName+".\n"+
+    var prompt="Write a recipe for: "+dishName+".\n"+
       "Use ONLY these pantry ingredients: "+stockDesc+". Staples always available: "+STAPLE.join(", ")+".\n"+
       (dietFlags.length?"Dietary: "+dietFlags.join(", ")+".\n":"")+
-      "Format: ingredient list then clear numbered steps. Be complete, up to 500 words.";
+      "Respond in EXACTLY this markdown structure, nothing else:\n"+
+      "## Ingredients\n"+
+      "- ingredient (quantity)\n"+
+      "- ... (one per line, with quantities)\n"+
+      "## Steps\n"+
+      "1. First step\n"+
+      "2. Next step\n"+
+      "... (numbered, one action per step)\n"+
+      "## Time\n"+
+      "Prep: X min · Cook: Y min\n"+
+      "Keep it under 400 words total. Do not add any other headings or commentary.";
     setRecipeFetching(dishName);
     setRecipeError("");
         try{
@@ -7211,7 +7350,8 @@ Only output the JSON. No markdown.`;
     swapLoading: swapLoading, confirmedDays: confirmedDays,
     dishes: dishes, recipes: recipes, fetchRecipe: fetchRecipe,
     setSwapModal: setSwapModal, setDishes: setDishes,
-    haptic: haptic, C: C
+    haptic: haptic, C: C,
+    items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock
   }), menu && menu.plan && /*#__PURE__*/React.createElement("div", {
     style: {marginBottom:16}
   }, /*#__PURE__*/React.createElement("div", {
@@ -7226,8 +7366,10 @@ Only output the JSON. No markdown.`;
           var STAPLE2=new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
           var activeMenu2=nextMenu||menu;
           var menuDishNames2=new Set();
-          Object.values(activeMenu2.plan).forEach(function(dp){
+          Object.entries(activeMenu2.plan).forEach(function(entry2){
+            var dn2=entry2[0], dp=entry2[1];
             if(!dp||typeof dp!=="object") return;
+            if(activeMenu2===menu && confirmedDays && confirmedDays[dn2]) return;
             Object.values(dp).forEach(function(n){if(n&&n!=="🍽 Dine Out")menuDishNames2.add(n);});
           });
           // Build same pantry lookup as shopping list
@@ -7285,8 +7427,10 @@ Only output the JSON. No markdown.`;
   (() => {
     var activeMenuForShopping = nextMenu || menu;
     var menuDishNames = new Set();
-    Object.values(activeMenuForShopping.plan).forEach(function(dayPlan){
+    Object.entries(activeMenuForShopping.plan).forEach(function(entry){
+      var dayName=entry[0], dayPlan=entry[1];
       if(!dayPlan||typeof dayPlan!=="object") return;
+      if(activeMenuForShopping===menu && confirmedDays && confirmedDays[dayName]) return;
       Object.values(dayPlan).forEach(function(n){if(n&&n!=="🍽 Dine Out")menuDishNames.add(n);});
     });
     var STAPLE = new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
@@ -7472,10 +7616,8 @@ Only output the JSON. No markdown.`;
           cursor:s.f?"pointer":"default",transition:"all 0.15s"}
       },
         /*#__PURE__*/React.createElement("div",{style:{fontSize:16,fontWeight:700,lineHeight:1.1,
-          color:isP?(pSt?(iLM?C.white:C.white):pNd?(iLM?"#888888":C.white):C.white):C.white}},s.v),
+          color:isP?(pSt?(iLM?C.white:C.white):pNd?(iLM?"#888888":C.white):C.white):C.white}},s.l),
         /*#__PURE__*/React.createElement("div",{style:{fontSize:11,letterSpacing:0.4,marginTop:2,textTransform:"uppercase",
-          color:isP?(pSt?(iLM?C.dim:C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.l),
-        /*#__PURE__*/React.createElement("div",{style:{fontSize:11,marginTop:1,
           color:isP?(pSt?(iLM?C.dim:C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.sub)
       );
     }));
@@ -7591,7 +7733,7 @@ Only output the JSON. No markdown.`;
     value: sqSize,
     onChange: setSqSize
   })), PANTRY_CATEGORIES.map(pc => {
-    const grpItems = summaryItems.filter(i => i.cat === pc.id).sort((a,b)=>a.name.localeCompare(b.name));
+    const grpItems = summaryItems.filter(i => i.cat === pc.id || (pc.id === "staples" && i.isStaple && i.cat !== "staples")).sort((a,b)=>a.name.localeCompare(b.name));
     if (!grpItems.length) return null;
     return /*#__PURE__*/React.createElement("div", {
       key: pc.id,
@@ -8192,7 +8334,38 @@ Only output the JSON. No markdown.`;
       flex: 1,
       padding: "9px 0"
     }
-  }, "ADD"))), addDishModal && /*#__PURE__*/React.createElement("div", {
+  }, "ADD"))), /*#__PURE__*/React.createElement(Modal, {
+    open: satGenPrompt,
+    onClose: () => {
+      localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
+      setSatGenPrompt(false);
+    },
+    title: "GENERATE NEXT WEEK?"
+  },
+    /*#__PURE__*/React.createElement("div", {
+      style: { fontSize: 14, color: C.dim, lineHeight: 1.6, marginBottom: 16 }
+    }, "Looks like the app wasn't open Saturday, so next week's menu wasn't auto-generated. Would you like to generate it now?"),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => {
+          localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
+          setSatGenPrompt(false);
+        },
+        style: { ...pill(false), flex: 1, padding: "9px 0" }
+      }, "NOT NOW"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => {
+          localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
+          setSatGenPrompt(false);
+          setLockedDays({});
+          localStorage.removeItem(SK.lockedDays);
+          showToast("Generating next week's menu\u2026", "success");
+          generateMenu({genMode:"mixed", ignoreStock:true});
+        },
+        style: { ...pill(true), flex: 1, padding: "9px 0" }
+      }, "GENERATE")
+    )
+  ), addDishModal && /*#__PURE__*/React.createElement("div", {
     onPointerDown: (e) => {
       if(e.target===e.currentTarget){ setAddDishModal(false); setDishAdvanced(false); }
     },
@@ -9473,7 +9646,18 @@ Only output the JSON. No markdown.`;
       padding: "8px 0",
       fontSize: 13
     }
-  }, t === "binary" ? "◻  Have / Don't Have" : "#  Count")))), /*#__PURE__*/React.createElement("div", {
+  }, t === "binary" ? "◻  Have / Don't Have" : "#  Count")))), editItemModal.cat !== "staples" && /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }
+  },
+    /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.white, fontWeight: 600, marginBottom: 3 } }, "Also a Staple"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, lineHeight: 1.4, maxWidth: 220 } }, "Shows this item under Staples too, in addition to its category.")
+    ),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: () => setEditItemModal(p => ({ ...p, isStaple: !p.isStaple })),
+      style: { ...pill(!!editItemModal.isStaple), padding: "5px 14px", fontSize: 13, flexShrink: 0 }
+    }, editItemModal.isStaple ? "YES" : "NO")
+  ), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
@@ -10089,6 +10273,10 @@ Only output the JSON. No markdown.`;
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
   initScreensaver();
 });
+
+
+
+
 
 
 
