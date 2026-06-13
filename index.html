@@ -10,7 +10,7 @@
 <title>Pantry OS</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body,#root{width:100%;height:100%;background:#0a0a0a;overflow:hidden;}
+  html,body,#root{width:100%;height:100%;background:#f5f0ea;overflow:hidden;}
   input,button,textarea{font-size:16px;}
   input[type="text"],input[type="password"]{-webkit-appearance:none;appearance:none;}
   ::-webkit-scrollbar{display:none;}
@@ -5145,6 +5145,13 @@ function App() {
   useEffect(() => {
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", C.bg);
+    // On iOS Safari, the layout viewport (html/body/#root height:100%) can be taller
+    // than the visual viewport when the browser chrome is showing — leaving a gap
+    // below our fixed-position app shell that shows html/body/#root's own background.
+    // Keep all three in sync with the theme so that gap is never black.
+    [document.documentElement, document.body, document.getElementById("root")].forEach(function(el){
+      if (el) el.style.background = C.bg;
+    });
   }, [theme]);
   const [colorMode, setColorMode] = useState("color"); // "color" | "mono"
   const [screensaverOn, setScreensaverOn] = useState(true);
