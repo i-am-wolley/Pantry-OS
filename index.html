@@ -16,6 +16,10 @@
   ::-webkit-scrollbar{display:none;}
   .modal-card-tall{max-height:88vh;}
   @supports (height:100dvh){.modal-card-tall{max-height:88dvh;}}
+  @media (max-width:480px){
+    .modal-card-tall{max-height:96vh; border-radius:16px;}
+    @supports (height:100dvh){.modal-card-tall{max-height:96dvh;}}
+  }
 </style>
 </head>
 <body>
@@ -5138,6 +5142,10 @@ function App() {
   const [autoNutrition, setAutoNutrition] = useState(false);
   const [haptics, setHaptics] = useState(true);
   const [theme, setTheme] = useState("light"); // "dark" | "light"
+  useEffect(() => {
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", C.bg);
+  }, [theme]);
   const [colorMode, setColorMode] = useState("color"); // "color" | "mono"
   const [screensaverOn, setScreensaverOn] = useState(true);
   const [screensaverMins, setScreensaverMins] = useState(15);
@@ -6848,6 +6856,7 @@ Only output the JSON. No markdown.`;
       [day]: !prev[day]
     }));
   }
+  const hideChrome = !!(addItemModal || addDishModal || editDishModal || editItemModal);
   return /*#__PURE__*/React.createElement("div", {
     style: {
       position: "fixed",
@@ -6869,6 +6878,7 @@ Only output the JSON. No markdown.`;
         ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
       `), /*#__PURE__*/React.createElement("div", {
     style: {
+      display: hideChrome ? "none" : "block",
       background: C.bg,
       borderBottom: `1px solid ${C.border}`,
       padding: "calc(env(safe-area-inset-top) + 10px) 12px 8px",
@@ -6965,12 +6975,12 @@ Only output the JSON. No markdown.`;
     }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
+      display: hideChrome ? "none" : "flex",
       position: "fixed",
       left: 0,
       right: 0,
       bottom: 0,
       zIndex: 25,
-      display: "flex",
       gap: 4,
       padding: "6px 10px calc(env(safe-area-inset-bottom) + 6px)",
       background: C.bg,
