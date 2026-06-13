@@ -7025,11 +7025,14 @@ Only output the JSON. No markdown.`;
   }), /*#__PURE__*/React.createElement("span", null, label))))), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
-      overflowY: "auto",
-      WebkitOverflowScrolling: "touch"
+      overflow: "hidden",
+      position: "relative"
     }
   }, showSettings && /*#__PURE__*/React.createElement("div", {
     style: {
+      height: "100%",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
       padding: "12px 10px 80px"
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -7754,6 +7757,9 @@ Only output the JSON. No markdown.`;
     }
   }, "\u2713 All data saved to localStorage \u2014 survives app close & reboots", /*#__PURE__*/React.createElement("br", null), "\u2713 Export backup before clearing browser data", /*#__PURE__*/React.createElement("br", null), "\u2713 Auto-backup available (toggle above)", /*#__PURE__*/React.createElement("br", null), "\u2713 Your API key never leaves your device", /*#__PURE__*/React.createElement("br", null), "\u2713 No account or login needed")) )), !showSettings && tab === "summary" && /*#__PURE__*/React.createElement("div", {
     style: {
+      height: "100%",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
       padding: "12px 10px 80px"
     }
   }, /*#__PURE__*/React.createElement(DayCardCarousel, {
@@ -7785,7 +7791,7 @@ Only output the JSON. No markdown.`;
       alignItems: "center",
       gap: 6
     }
-  }, /*#__PURE__*/React.createElement(Icon, { name: "leaf", size: 16, style: { color: colorMode === "mono" ? C.dim : "#6F9E80" } }), "What can I cook tonight?")), menu && menu.plan && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Icon, { name: "leaf", size: 16, style: { color: colorMode === "mono" ? C.dim : "#6F9E80" } }), "What can I cook tonight?")), (nextMenu||menu) && (nextMenu||menu).plan && /*#__PURE__*/React.createElement("div", {
     style: {marginBottom:16}
   }, /*#__PURE__*/React.createElement("div", {
     style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
@@ -7995,6 +8001,9 @@ Only output the JSON. No markdown.`;
     );
   })())), !showSettings && tab === "menu" && /*#__PURE__*/React.createElement("div", {
     style: {
+      height: "100%",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
       padding: "12px 10px 80px"
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -8228,6 +8237,9 @@ Only output the JSON. No markdown.`;
     colorMode: colorMode
   }))))), !showSettings && tab === "pantry" && /*#__PURE__*/React.createElement("div", {
     style: {
+      height: "100%",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
       padding: "12px 10px 80px"
     }
   },   (function(){
@@ -8505,6 +8517,9 @@ Only output the JSON. No markdown.`;
     }
   }, summaryFilter === "stocked" ? "No items stocked yet." : "You're fully stocked 🌿")), !showSettings && tab === "dishes" && /*#__PURE__*/React.createElement("div", {
     style: {
+      height: "100%",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
       padding: "12px 10px 80px"
     }
   }, /*#__PURE__*/React.createElement("div", {
