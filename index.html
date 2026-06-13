@@ -521,6 +521,15 @@ function initScreensaver() {
   overlay.appendChild(menuEl);
   document.body.appendChild(overlay);
 
+  function setGapBg(color) {
+    [document.documentElement, document.body, document.getElementById("root")].forEach(function(el){
+      if (el) el.style.background = color;
+    });
+  }
+  window.__ssSyncGapBg = function(){
+    if (visible) setGapBg("#000000");
+    else setGapBg(window.__appBg || "#f5f0ea");
+  };
   function applyPhase() {
     var p = PHASES[getPhase()];
     overlay.style.background = "linear-gradient(135deg," + p.grad + ")";
@@ -587,6 +596,7 @@ function initScreensaver() {
     if (visible) return;
     if (window.__ssEnabled === false) return;
     visible = true;
+    setGapBg("#000000");
     lastPhase = getPhase();
     applyPhase();
     buildMenu();
@@ -606,6 +616,7 @@ function initScreensaver() {
     tr.classList.remove("ss-in");
     menuEl.classList.remove("ss-in");
     if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+    setGapBg(window.__appBg || "#f5f0ea");
     resetTimer();
   }
 
@@ -5152,6 +5163,8 @@ function App() {
     [document.documentElement, document.body, document.getElementById("root")].forEach(function(el){
       if (el) el.style.background = C.bg;
     });
+    window.__appBg = C.bg;
+    if (window.__ssSyncGapBg) window.__ssSyncGapBg();
   }, [theme]);
   const [colorMode, setColorMode] = useState("color"); // "color" | "mono"
   const [screensaverOn, setScreensaverOn] = useState(true);
@@ -5326,13 +5339,17 @@ function App() {
   }, [loaded]);
 
   // ── Saturday auto-gen missed: prompt user on next open ──
+  // Fires both for "menu is current week but next week wasn't generated" (normal
+  // missed-Saturday case) AND "menu itself is stale from a previous week" (app
+  // wasn't opened across an entire week) — the latter previously fell through this
+  // guard entirely because it required menu.weekKey === getWeekKey().
   useEffect(() => {
     if (!loaded) return;
     var today = new Date().getDay(); // 0=Sun..6=Sat
     if (today === 6) return; // it's Saturday — normal auto-gen path handles it
     if (nextMenu) return; // already have next week's plan
     if (!apiKey || !dishes || dishes.length < 5) return;
-    if (!menu || menu.weekKey !== getWeekKey()) return; // no current-week menu to base this on
+    if (!menu) return; // nothing to base/replace yet
     var wk = getWeekKey();
     if (lastAutoGen === wk) return; // Saturday's auto-gen for this week already succeeded
     if (localStorage.getItem(SK.satGenPromptWeek) === wk) return; // already asked this week
@@ -8770,11 +8787,13 @@ Only output the JSON. No markdown.`;
       localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
       setSatGenPrompt(false);
     },
-    title: "Generate next week?"
+    title: (menu && menu.weekKey !== getWeekKey()) ? "Your menu is out of date" : "Generate next week?"
   },
     /*#__PURE__*/React.createElement("div", {
       style: { fontSize: 14, color: C.dim, lineHeight: 1.6, marginBottom: 16 }
-    }, "Looks like the app wasn't open Saturday, so next week's menu wasn't auto-generated. Would you like to generate it now?"),
+    }, (menu && menu.weekKey !== getWeekKey())
+        ? "It looks like the app wasn't opened during the last week, so this menu is from a previous week. Generate a fresh one for now?"
+        : "Looks like the app wasn't open Saturday, so next week's menu wasn't auto-generated. Would you like to generate it now?"),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
         onClick: () => {
