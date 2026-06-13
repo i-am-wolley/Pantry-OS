@@ -14,6 +14,8 @@
   input,button,textarea{font-size:16px;}
   input[type="text"],input[type="password"]{-webkit-appearance:none;appearance:none;}
   ::-webkit-scrollbar{display:none;}
+  .modal-card-tall{max-height:88vh;}
+  @supports (height:100dvh){.modal-card-tall{max-height:88dvh;}}
 </style>
 </head>
 <body>
@@ -4050,8 +4052,10 @@ function Modal({
       padding: 20,
       width: "100%",
       maxWidth: 400,
-      margin: "auto"
-    }
+      margin: "auto",
+      overflowY: "auto"
+    },
+    className: "modal-card-tall"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -6846,7 +6850,8 @@ Only output the JSON. No markdown.`;
   }
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      height: "100vh",
+      position: "fixed",
+      inset: 0,
       display: "flex",
       flexDirection: "column",
       background: C.bg,
@@ -7967,7 +7972,7 @@ Only output the JSON. No markdown.`;
         },
           ing,
           entry.isStaple && /*#__PURE__*/React.createElement("span", {
-            style:{fontSize:10, fontWeight:800, color: isStockedNow ? C.dim2 : "#c9a36a", marginLeft:1, letterSpacing:0.5}
+            style:{fontSize:13, fontWeight:600, color: isStockedNow ? C.dim2 : "#c9a36a"}
           }, "S"),
           entry.isAI && /*#__PURE__*/React.createElement("span", {
             style:{fontSize:11,color:C.dim2,marginLeft:2}
@@ -8785,12 +8790,11 @@ Only output the JSON. No markdown.`;
       boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
       width: "100%",
       maxWidth: 440,
-      
       display: "flex",
       flexDirection: "column",
-      maxHeight: "88vh",
       overflow: "hidden"
-    }
+    },
+    className: "modal-card-tall"
   }, /*#__PURE__*/React.createElement("div", {
     style: {flex: 1, overflowY: "auto", padding: "20px"}
   }, /*#__PURE__*/React.createElement("div", {
@@ -9243,12 +9247,11 @@ Only output the JSON. No markdown.`;
       boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
       width: "100%",
       maxWidth: 440,
-      
       display: "flex",
       flexDirection: "column",
-      maxHeight: "88vh",
       overflow: "hidden"
-    }
+    },
+    className: "modal-card-tall"
   }, /*#__PURE__*/React.createElement("div", {
     style: {flex: 1, overflowY: "auto", padding: "20px"}
   }, /*#__PURE__*/React.createElement("div", {
