@@ -5283,6 +5283,10 @@ function App() {
     if (!loaded) return;
     // Broadened: fires on ANY day if nextMenu exists and its weekKey matches
     // the current week — covers app reopening Monday+ after a missed Sunday reset.
+    // IMPORTANT: never on Saturday — getWeekKey() already points at *next* week on
+    // Saturdays (by design, so generation lands in nextMenu), so a same-day-generated
+    // nextMenu would always "match" and get promoted over the still-current Saturday menu.
+    if (new Date().getDay() === 6) return;
     try {
       var snm = localStorage.getItem(SK.nextMenu);
       if (!snm) return;
@@ -7900,6 +7904,25 @@ Only output the JSON. No markdown.`;
       });
     });
     var missingList = Object.keys(missingMap).sort();
+    // Always surface out-of-stock pantry staples (e.g. onions, garlic, milk, eggs),
+    // even if they're not used by this week's menu — they're used constantly.
+    items.forEach(function(it){
+      if (!it.isStaple) return;
+      var inStock = !!stock[it.id] || !!stock[String(it.id)];
+      if (inStock) return;
+      if (!missingMap[it.name]) {
+        missingMap[it.name] = { dishes: [], isAI: false, itemId: it.id, isStaple: true };
+        missingList.push(it.name);
+      } else {
+        missingMap[it.name].isStaple = true;
+      }
+    });
+    // Staples first, then everything else — both alphabetical
+    missingList = missingList.sort(function(a,b){
+      var sa = !!missingMap[a].isStaple, sb = !!missingMap[b].isStaple;
+      if (sa !== sb) return sa ? -1 : 1;
+      return a.localeCompare(b);
+    });
     // AI dishes with no ingredient data yet
     var unknownAI = [...menuDishNames].filter(function(n){
       return !dishes.find(function(d){return d.name===n;}) && !aiDishIngredients[n];
@@ -7933,8 +7956,8 @@ Only output the JSON. No markdown.`;
           title: "For: "+entry.dishes.join(", ")+(entry.isAI?" (AI dish)":""),
           style:{
             padding:"5px 10px",borderRadius:20,fontSize:13,fontWeight:600,
-            background: isStockedNow ? C.card : C.bg,
-            border:"1px solid "+(isStockedNow ? C.dim2 : C.border),
+            background: isStockedNow ? C.card : (entry.isStaple ? "rgba(201,163,106,0.14)" : C.bg),
+            border:"1px solid "+(isStockedNow ? C.dim2 : (entry.isStaple ? "rgba(201,163,106,0.35)" : C.border)),
             color: isStockedNow ? C.dim : C.white,
             opacity: isStockedNow ? 0.5 : 1,
             cursor:"pointer",
@@ -7943,6 +7966,9 @@ Only output the JSON. No markdown.`;
           }
         },
           ing,
+          entry.isStaple && /*#__PURE__*/React.createElement("span", {
+            style:{fontSize:10, fontWeight:800, color: isStockedNow ? C.dim2 : "#c9a36a", marginLeft:1, letterSpacing:0.5}
+          }, "S"),
           entry.isAI && /*#__PURE__*/React.createElement("span", {
             style:{fontSize:11,color:C.dim2,marginLeft:2}
           }, "AI")
@@ -8141,7 +8167,12 @@ Only output the JSON. No markdown.`;
       var ORDER=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
       var idx=ORDER.indexOf(day);
       var todayIdx2=new Date().getDay();
-      var offset=((nextMenu||menu)&&(nextMenu||menu).generatedOnSaturday)
+      // The Saturday-generation offset scheme (Sun=+1...Fri=+6, Sat=+7) is only valid
+      // ON the Saturday it was generated. Once promoted to the current week (or simply
+      // viewed on any other day), fall back to the standard "days until this day" math —
+      // otherwise every date is off by 1-2 days for the rest of the week.
+      var useSatOffsets=((nextMenu||menu)&&(nextMenu||menu).generatedOnSaturday) && todayIdx2===6;
+      var offset=useSatOffsets
         ? (idx===6?7:idx+1)  // Saturday generated: Sat=+7, Sun=+1...Fri=+6
         : (idx>=todayIdx2?idx-todayIdx2:7-(todayIdx2-idx));
       var d=new Date(); d.setDate(d.getDate()+offset);
@@ -8347,7 +8378,12 @@ Only output the JSON. No markdown.`;
       whiteSpace: "nowrap",
       flexShrink: 0
     }
-  }, items.every(item => item.type === "quantity" ? (stock[item.id] || 0) > 0 : stock[item.id] === true) ? "Clear stock" : "Mark all in stock"), /*#__PURE__*/React.createElement("button", {
+  }, items.every(item => item.type === "quantity" ? (stock[item.id] || 0) > 0 : stock[item.id] === true) ? "Clear stock" : "Mark all in stock"), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }
+  }, /*#__PURE__*/React.createElement(SizeSlider, {
+    value: sqSize,
+    onChange: setSqSize
+  }), /*#__PURE__*/React.createElement("button", {
     onClick: () => { haptic("light"); setAddItemModal(true); },
     style: {
       background: tint("#6F9E80", C.bg === "#f5f0ea" ? 0.12 : 0.14),
@@ -8361,12 +8397,7 @@ Only output the JSON. No markdown.`;
       fontFamily: C.font,
       whiteSpace: "nowrap"
     }
-  }, "+ Add item")), /*#__PURE__*/React.createElement("div", {
-    style: { display: "flex", justifyContent: "flex-end", marginBottom: 10 }
-  }, /*#__PURE__*/React.createElement(SizeSlider, {
-    value: sqSize,
-    onChange: setSqSize
-  })), PANTRY_CATEGORIES.map(pc => {
+  }, "+ Add item"))), PANTRY_CATEGORIES.map(pc => {
     const grpItems = summaryItems.filter(i => i.cat === pc.id || (pc.id === "staples" && i.isStaple && i.cat !== "staples")).filter(i => !pantrySearch || i.name.toLowerCase().includes(pantrySearch.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
     if (!grpItems.length) return null;
     return /*#__PURE__*/React.createElement("div", {
